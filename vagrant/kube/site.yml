@@ -1,0 +1,24 @@
+---
+- name: Common role
+  hosts: all
+  become: true
+  roles:
+    - common
+
+- name: setup master
+  hosts: master
+  become: true
+  roles:
+    - master
+
+- name: setup node
+  hosts: node
+  become: true
+  roles:
+    - node
+
+- name: Post deploy
+  hosts: master
+  become: true
+  roles:
+    - post

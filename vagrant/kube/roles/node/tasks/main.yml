@@ -1,0 +1,9 @@
+---
+- name: Check if already joined
+  stat:
+    path: /var/log/kubeadm.log
+  register: kubeadm_log
+
+- name: Join master
+  command: kubeadm join --token="{{ kubeadm_token.stdout }}" kube-0 | tee /var/log/kubeadm.log
+  when: kubeadm_log.stat.exists == false

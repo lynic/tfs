@@ -1,0 +1,32 @@
+---
+- name: Copy repo
+  copy:
+    src: files/kubernetes.repo
+    dest: /etc/yum.repos.d/
+
+- name: Install packages
+  yum:
+    state: present
+    update_cache: yes
+    name: "{{ item }}"
+  with_items:
+    - docker
+    - kubelet
+    - kubeadm
+    - kubectl
+    - kubernetes-cni
+
+- name: disable firewalld
+  systemd:
+    enabled: true
+    state: stopped
+    name: firewalld
+
+- name: Enable service
+  systemd:
+    enabled: true
+    state: started
+    name: "{{ item }}"
+  with_items:
+    - docker
+    - kubelet

@@ -1,0 +1,22 @@
+---
+- name: Check if inititated kubernetes
+  stat:
+    path: /var/log/kubeadm.log
+  register: kubeadm_log
+
+- name: kubeadm init
+  shell: kubeadm init | tee /var/log/kubeadm.log
+  when: kubeadm_log.stat.exists == false
+
+- name: Copy get_token.sh
+  copy:
+    src: files/get_token.sh
+    dest: /tmp/get_token.sh
+    mode: a+x
+
+- name: Get token
+  shell: /tmp/get_token.sh
+  register: kubeadm_token
+
+- name: debug
+  debug: var=kubeadm_token

@@ -1,0 +1,14 @@
+---
+- name: Copy weave.yml
+  copy:
+    src: files/weave.yml
+    dest: /tmp/weave.yml
+
+- name: Check if created weave network
+  stat:
+    path: /var/log/weave.log
+  register: weave_log
+
+- name: Create weave network
+  shell: kubectl apply -f /tmp/weave.yml | tee /var/log/weave.log
+  when: weave_log.stat.exists == false

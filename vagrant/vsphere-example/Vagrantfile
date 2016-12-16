@@ -1,0 +1,37 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+require 'yaml'
+
+configs = YAML.load_file("#{Dir.home}/.vagrant.d/vsphere.yaml")
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "dummy"
+  # config.vm.box     = 'vsphere'
+  # config.vm.box_url = 'https://vagrantcloud.com/ssx/boxes/vsphere-dummy/versions/0.0.1/providers/vsphere.box'
+  # config.vm.box = "ssx/vsphere-dummy"
+  config.ssh.username = configs['ssh']['user']
+  config.ssh.password = configs['ssh']['password']
+  config.ssh.keys_only = false
+
+  config.vm.provider :vsphere do |vsphere|
+    vsphere.host = configs['vsphere']['vcenter']
+    vsphere.user = configs['vsphere']['user']
+    vsphere.password = configs['vsphere']['password']
+    vsphere.insecure = true
+    vsphere.data_center_name = "Datacenter"
+    vsphere.compute_resource_name = 'Cluster1'
+    # vsphere.resource_pool_name = 'vagrant'
+    vsphere.data_store_name = 'datastore1'
+
+    vsphere.name = 'vagrant-vsphere'
+    vsphere.template_name = "Templates/CentOS7-Server"
+    vsphere.vm_base_path = "vagrant-machines"
+    # vsphere.clone_from_vm = true
+    vsphere.linked_clone = true
+
+    vsphere.memory_mb = 4096
+    vsphere.cpu_count = 4
+    # vsphere.vlan = 'DPortGroup_VPN'
+  end
+end
