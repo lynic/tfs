@@ -1,0 +1,26 @@
+---
+- name: Add docker repo
+  copy:
+    src: files/docker.repo
+    dest: /etc/yum.repos.d/docker.repo
+
+- name: Install docker
+  yum:
+    state: presented
+    update_cache: true
+    name: docker-engine
+
+- name: enable docker
+  systemd:
+    enabled: true
+    state: started
+    name: docker
+
+- name: debug
+  debug: var=ansible_user
+
+- name: Add user to docker group
+  user:
+    name: "{{ ansible_user }}"
+    groups: docker
+    append: yes

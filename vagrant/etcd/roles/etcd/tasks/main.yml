@@ -1,0 +1,31 @@
+---
+- name: Install etcd3
+  yum:
+    state: present
+    # update_cache: true
+    name: etcd3
+
+- name: Disable firewalld
+  systemd:
+    enabled: false
+    state: stopped
+    name: firewalld
+
+- name: Configure etcd
+  template:
+    src: templates/etcd.conf.j2
+    dest: /etc/etcd/etcd.conf
+
+- name: Start etcd
+  systemd:
+    enabled: yes
+    state: started
+    name: etcd
+
+- name: check health
+  shell: etcdctl cluster-health
+  register: etcd_health
+  # when: inventory_hostname == groups['etcd'][0]
+
+- name: debug
+  debug: var=etcd_health
