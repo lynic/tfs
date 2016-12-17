@@ -5,5 +5,5 @@
   register: kubeadm_log
 
 - name: Join master
-  command: kubeadm join --token="{{ kubeadm_token.stdout }}" kube-0 | tee /var/log/kubeadm.log
+  shell: kubeadm join --token="{{ hostvars['kube-0']['kubeadm_token']['stdout'] }}" kube-0 | tee /var/log/kubeadm.log
   when: kubeadm_log.stat.exists == false

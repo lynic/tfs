@@ -10,5 +10,13 @@
   register: weave_log
 
 - name: Create weave network
-  shell: kubectl apply -f /tmp/weave.yml | tee /var/log/weave.log
+  # shell: kubectl apply -f /tmp/weave.yml | tee /var/log/weave.log
+  shell: kubectl apply -f https://git.io/weave-kube | tee /var/log/weave.log
   when: weave_log.stat.exists == false
+
+- name: Check nodes
+  shell: kubectl get nodes
+  register: kube_nodes
+
+- name: debug
+  debug: var=kube_nodes

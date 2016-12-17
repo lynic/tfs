@@ -31,13 +31,11 @@ Vagrant.configure("2") do |config|
     # vsphere.memory_mb = 4096
     # vsphere.cpu_count = 4
     vsphere.vlan = 'DPortGroup_VPN'
+    vsphere.real_nic_ip = true
   end
 
-  # config.vm.provision :shell do |shell|
-  #   shell.path = "common.sh"
-  # end
-
   N = 2
+
   (0..N).each do |i|
     config.vm.define "kube-#{i}" do |n|
       n.vm.hostname = "kube-#{i}"
@@ -45,20 +43,14 @@ Vagrant.configure("2") do |config|
         vsphere.name = "kube-#{i}"
         vsphere.memory_mb = 4096
         vsphere.cpu_count = 4
-        # vsphere.vlan = 'DPortGroup_VPN'
       end
-      # if i == 0
-      #   n.vm.provision :shell do |shell|
-      #     shell.inline = "kubeadm init"
-      #   end
-      # end
       if i == N
         n.vm.provision :ansible do |ansible|
           ansible.verbose = true
           ansible.limit = "all"
           ansible.groups = {
             "master" => "kube-0",
-            "node" => (1..N).map {|j| "node#{j}"}
+            "node" => (1..N).map {|j| "kube-#{j}"}
           }
           ansible.playbook = "site.yml"
         end
