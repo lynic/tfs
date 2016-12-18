@@ -48,6 +48,7 @@ Vagrant.configure("2") do |config|
         n.vm.provision :ansible do |ansible|
           ansible.verbose = true
           ansible.limit = "all"
+          ansible.galaxy_roles_path = "../../ansible/roles/"
           ansible.groups = {
             "etcd" => (0..N).map {|j| "etcd-#{j}"}
           }
