@@ -10,10 +10,16 @@
     update_cache: true
     name: docker-engine
 
+- name: enable mount shared
+  copy:
+    src: files/docker.service
+    dest: /etc/systemd/system/docker.service
+
 - name: enable docker
   systemd:
     enabled: true
     state: started
+    domain_reload: yes
     name: docker
 
 - name: debug

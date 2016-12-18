@@ -14,9 +14,25 @@
   shell: kubectl apply -f https://git.io/weave-kube | tee /var/log/weave.log
   when: weave_log.stat.exists == false
 
+- name: Check if created dashboard
+  stat:
+    path: /var/log/kube-dashboard.log
+  register: kube_dash
+
+- name: Create dashboard
+  shell: kubectl create -f https://rawgit.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard.yaml | tee /var/log/kube-dashboard.log
+  when: kube_dash.stat.exists == false
+
 - name: Check nodes
   shell: kubectl get nodes
   register: kube_nodes
 
 - name: debug
   debug: var=kube_nodes
+
+- name: check pods
+  shell: kubectl get pods --all-namespaces
+  register: kube_pods
+
+- name: debug
+  debug: var=kube_pods

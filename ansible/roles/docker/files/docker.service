@@ -1,0 +1,4 @@
+.include /usr/lib/systemd/system/docker.service
+[Service]
+MountFlags=shared
+EOF

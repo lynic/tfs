@@ -1,0 +1,27 @@
+---
+- name: setup glusterfs repo
+  yum:
+    state: present
+    name: centos-release-gluster
+
+- name: install glusterfs
+  yum:
+    state: present
+    update_cache: yes
+    name: "{{ item }}"
+  with_items:
+    - glusterfs
+    - glusterfs-server
+    - glusterfs-fuse
+
+- name: disable firewalld
+  systemd:
+    enabled: false
+    state: stopped
+    name: firewalld
+
+- name: start glusterd
+  systemd:
+    enabled: yes
+    state: started
+    name: glusterd

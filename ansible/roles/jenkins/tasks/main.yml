@@ -1,0 +1,48 @@
+---
+- name: Install javasdk
+  yum:
+    state: present
+    name: java-1.8.0-openjdk
+
+- name: Add java settings to /etc/profile
+  blockinfile:
+    dest: /etc/profile
+    marker: "# {mark} ansible generated #"
+    block: |
+        export JAVA_HOME=/usr/lib/jvm/jre-1.8.0-openjdk
+        export JRE_HOME=/usr/lib/jvm/jre
+
+- name: Copy jenkins repo
+  copy:
+    src: files/jenkins.repo
+    dest: /etc/yum.repos.d/jenkins.repo
+
+- name: Install jenkins public key
+  rpm_key:
+    key: http://pkg.jenkins-ci.org/redhat-stable/jenkins-ci.org.key
+    state: present
+
+- name: Install jenkins
+  yum:
+    state: present
+    update_cache: yes
+    name: jenkins
+
+# - name: Open 8080/tcp firewall port
+#   firewalld:
+#     port: 8080/tcp
+#     zone: public
+#     permanent: true
+#     state: enabled
+
+- name: Disable firewalld
+  systemd:
+    enabled: no
+    state: stopped
+    name: firewalld
+
+- name: Start jenkins
+  systemd:
+    enabled: yes
+    state: started
+    name: jenkins
