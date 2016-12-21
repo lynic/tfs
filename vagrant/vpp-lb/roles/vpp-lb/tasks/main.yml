@@ -1,0 +1,70 @@
+---
+- name: Disable firewalld
+  systemd:
+    enabled: false
+    state: stopped
+    name: firewalld
+
+- name: Setup repo
+  copy:
+    src: files/vpp-master.repo
+    dest: /etc/yum.repos.d/vpp.repo
+
+- name: Install vpp
+  yum:
+    state: present
+    update_cache: yes
+    name: "{{ item }}"
+  with_items:
+    - vpp
+    - vpp-plugins
+    - dpdk
+    - dpdk-tools
+
+- name: Configure vpp
+  blockinfile:
+    dest: /etc/vpp/startup.conf
+    marker: "# {mark} ansible generated #"
+    block: |
+      dpdk {
+        uio-driver uio_pci_generic
+        dev 0000:0b:00.0
+        socket-mem 1024
+      }
+      tuntap {
+        enable
+      }
+
+- name: mount uio_pci_generic
+  shell: modprobe uio_pci_generic
+
+- name: enable hugepages
+  sysctl:
+    name: vm.nr_hugepages
+    value: 1024
+    reload: yes
+
+- name: bind dpdk driver to nic2
+  shell: dpdk-devbind -b uio_pci_generic 0000:0b:00.0
+
+- name: start vpp
+  systemd:
+    name: vpp
+    state: started
+    enabled: yes
+
+- name: Add IP to nic2
+  shell: "{{ item }}"
+  with_items:
+    - "vppctl set int state GigabitEthernetb/0/0 up"
+    - "vppctl set int ip address GigabitEthernetb/0/0 10.20.1.{{ ansible_default_ipv4.address.split('.')[3] }}/24"
+
+- name: setup vpp lb
+  shell: "{{ item }}"
+  with_items:
+    - "vppctl lb conf ip4-src-address 10.20.1.{{ ansible_default_ipv4.address.split('.')[3] }} timeout 3"
+    - "vppctl lb vip 10.20.2.{{ ansible_default_ipv4.address.split('.')[3] }}/32 encap gre4 new_len 1024"
+
+- name: Add vpp lb as
+  shell: "vppctl lb as 10.20.2.{{ ansible_default_ipv4.address.split('.')[3] }}/32 10.20.1.{{ hostvars[item].ansible_default_ipv4.address.split('.')[3] }}"
+  with_items: "{{ groups['as'] }}"

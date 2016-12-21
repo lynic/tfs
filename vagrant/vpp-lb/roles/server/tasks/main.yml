@@ -1,0 +1,58 @@
+---
+- name: disable firewalld
+  systemd:
+    enabled: false
+    state: stopped
+    name: firewalld
+
+- name: Install apache2
+  yum:
+    state: present
+    name: httpd
+
+- name: Replace index.html
+  template:
+    src: templates/index.html.j2
+    dest: /var/www/html/index.html
+
+- name: Start apache2
+  systemd:
+    state: started
+    enabled: yes
+    name: httpd
+
+- name: Configure IP to nic2
+  shell: "ifconfig ens192 10.20.1.{{ ansible_default_ipv4.address.split('.')[3] }}/24 up"
+
+- name: setup tunnel
+  shell: "ip tunnel add tun0 mode gre local 10.20.1.{{ ansible_default_ipv4.address.split('.')[3] }} remote 10.20.1.{{ hostvars[groups['vpp'][0]].ansible_default_ipv4.address.split('.')[3] }} ttl 255"
+
+- name: set net.ipv4.conf.tun0.arp_ignore
+  sysctl:
+    name: "net.ipv4.conf.{{ item }}.arp_ignore"
+    value: 1
+    reload: yes
+  with_items:
+    - "all"
+    - "tun0"
+
+- name: set net.ipv4.conf.tun0.arp_announce
+  sysctl:
+    name: "net.ipv4.conf.{{ item }}.arp_announce"
+    value: 2
+    reload: yes
+  with_items:
+    - "all"
+    - "tun0"
+
+- name: set net.ipv4.conf.tun0.rp_filter
+  sysctl:
+    name: "net.ipv4.conf.{{ item }}.rp_filter"
+    value: 0
+    reload: yes
+  with_items:
+    - "all"
+    - "tun0"
+
+- name: up tun0
+  shell: "ifconfig tun0 10.20.2.{{ hostvars[groups['vpp'][0]].ansible_default_ipv4.address.split('.')[3] }}/32 up"

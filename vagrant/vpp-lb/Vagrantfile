@@ -1,0 +1,73 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+require "vagrant-vsphere"
+require 'yaml'
+
+configs = YAML.load_file("#{Dir.home}/.vagrant.d/vsphere.yaml")
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "dummy"
+  config.ssh.username = configs['ssh']['user']
+  config.ssh.password = configs['ssh']['password']
+  config.ssh.keys_only = false
+
+  config.vm.provider :vsphere do |vsphere|
+    vsphere.host = configs['vsphere']['vcenter']
+    vsphere.user = configs['vsphere']['user']
+    vsphere.password = configs['vsphere']['password']
+    vsphere.insecure = true
+    vsphere.data_center_name = "Datacenter"
+    vsphere.compute_resource_name = 'Cluster1'
+    # vsphere.resource_pool_name = 'vagrant'
+    vsphere.data_store_name = 'datastore1'
+    vsphere.template_name = "Templates/CentOS7-Server"
+    vsphere.vm_base_path = "vagrant-machines"
+    # vsphere.clone_from_vm = true
+    vsphere.linked_clone = true
+    # vsphere.real_nic_ip = true
+    vsphere.ssh_cidr = '172.20.1.0/24'
+  end
+  vpp_name = 'vpp-lb-0'
+  config.vm.define vpp_name do |n|
+    n.vm.hostname = vpp_name
+    n.vm.provider :vsphere do |vsphere|
+      vsphere.name = vpp_name
+      vsphere.memory_mb = 4096
+      vsphere.cpu_count = 4
+      vsphere.networks = [
+        {'network': 'DPortGroup_VPN'},
+        {'network': 'Dummy'}
+      ]
+    end
+  end
+
+  N = 1
+  (0..N).each do |i|
+    name = "vpp-as-#{i}"
+    config.vm.define name do |n|
+      n.vm.hostname = name
+      n.vm.provider :vsphere do |vsphere|
+        vsphere.name = name
+        vsphere.memory_mb = 2048
+        vsphere.cpu_count = 2
+        vsphere.networks = [
+            {'network': 'DPortGroup_VPN'},
+            {'network': 'Dummy'}
+        ]
+      end
+      if i == N
+        n.vm.provision :ansible do |ansible|
+          ansible.verbose = true
+          ansible.limit = "all"
+        #   ansible.galaxy_roles_path = "../../ansible/roles/"
+          ansible.groups = {
+            "vpp" => "vpp-lb-0",
+            "as" => (0..N).map {|j| "vpp-as-#{j}"},
+          }
+          ansible.playbook = "site.yml"
+        end
+      end
+    end
+  end
+end

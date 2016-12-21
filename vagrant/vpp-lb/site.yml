@@ -1,0 +1,17 @@
+---
+- name: Gather facts
+  hosts: all
+  gather_facts: yes
+  tasks: []
+
+- name: Setup vpp
+  hosts: vpp
+  become: yes
+  roles:
+    - vpp-lb
+
+- name: Setup servers
+  hosts: as
+  become: yes
+  roles:
+    - server
