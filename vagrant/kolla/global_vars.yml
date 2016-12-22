@@ -1,3 +1,6 @@
 ---
 kolla_version: "4.0.0.0b2"
 kolla_ansible_version: "4.0.0.0b2"
+heat: true
+senlin: true
+murano: true

@@ -1,0 +1,75 @@
+---
+- name: Install ansible
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - ansible
+    - python-pip
+    - python-devel
+    - git
+    - gcc
+
+- name: Install kolla-ansible
+  pip:
+    name: "{{ item }}"
+  with_items:
+    - kolla-ansible
+    - tox
+    - python-openstackclient
+    - python-neutronclient
+    - python-heatclient
+    - python-senlinclient
+
+- name: Clone kolla-ansible
+  shell: "[ -d /opt/kolla-ansible ] || git clone https://github.com/openstack/kolla-ansible /opt/kolla-ansible"
+
+- name: mkdir /etc/kolla/config/nova
+  file:
+    path: /etc/kolla/config/nova
+    recurse: yes
+    state: directory
+
+- name: Copy globals.yml
+  template:
+    src: templates/globals.yml
+    dest: /etc/kolla/globals.yml
+
+- name: copy nova-compute.config
+  template:
+    src: templates/nova-compute.conf
+    dest: /etc/kolla/config/nova/nova-compute.conf
+
+- name: Generate passwords
+  shell: cd /opt/kolla-ansible && /usr/bin/cp -f etc/kolla/passwords.yml /etc/kolla/ && kolla-genpwd
+
+- name: bootstrap server
+  shell: cd /opt/kolla-ansible && kolla-ansible -i ansible/inventory/all-in-one bootstrap-servers
+
+- name: prechecks
+  shell: cd /opt/kolla-ansible && kolla-ansible -i ansible/inventory/all-in-one prechecks
+
+- name: pull kolla images
+  shell: cd /opt/kolla-ansible && kolla-ansible -i ansible/inventory/all-in-one pull
+
+- name: deploy kolla openstack
+  shell: cd /opt/kolla-ansible && kolla-ansible -i ansible/inventory/all-in-one deploy
+
+- name: post deploy openstack
+  shell: cd /opt/kolla-ansible && kolla-ansible -i ansible/inventory/all-in-one post-deploy
+
+- name: Generate id_rsa
+  shell: ssh-keygen -t rsa -f ~/.ssh/id_rsa -q -b 2048 -N ""
+
+- name: Init resource
+  shell: source /etc/kolla/admin-openrc.sh && /opt/kolla-ansible/tools/init-runonce
+
+- name: Get admin password
+  shell: cat /etc/kolla/passwords.yml |grep keystone_admin_password| cut -d' ' -f2
+  register: admin_password
+
+- name: openstack horizon ip
+  debug: msg="{{ kolla_internal_vip_address }}"
+
+- name: admin password
+  debug: var=admin_password.stdout

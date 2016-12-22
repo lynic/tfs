@@ -1,0 +1,1 @@
+kolla_internal_vip_address: "{{ ansible_default_ipv4.address.split('.')[0] }}.{{ ansible_default_ipv4.address.split('.')[1] }}.{{ (ansible_default_ipv4.address.split('.')[2]|int)+1 }}.{{ ansible_default_ipv4.address.split('.')[3] }}"

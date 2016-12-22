@@ -1,0 +1,64 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+require "vagrant-vsphere"
+require 'yaml'
+
+configs = YAML.load_file("#{Dir.home}/.vagrant.d/vsphere.yaml")
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "dummy"
+  config.ssh.username = configs['ssh']['user']
+  config.ssh.password = configs['ssh']['password']
+  config.ssh.keys_only = false
+
+  config.vm.provider :vsphere do |vsphere|
+    vsphere.host = configs['vsphere']['vcenter']
+    vsphere.user = configs['vsphere']['user']
+    vsphere.password = configs['vsphere']['password']
+    vsphere.insecure = true
+    vsphere.data_center_name = "Datacenter"
+    vsphere.compute_resource_name = 'Cluster1'
+    # vsphere.resource_pool_name = 'vagrant'
+    vsphere.data_store_name = 'datastore1'
+
+    # vsphere.name = "kube-#{i}"
+    vsphere.template_name = "Templates/CentOS7-Server"
+    vsphere.vm_base_path = "vagrant-machines"
+    # vsphere.clone_from_vm = true
+    vsphere.linked_clone = true
+
+    # vsphere.memory_mb = 4096
+    # vsphere.cpu_count = 4
+    # vsphere.vlan = 'DPortGroup_VPN'
+    vsphere.real_nic_ip = true
+    vsphere.ssh_cidr = '172.20.1.0/24'
+  end
+
+
+  # Boot ansible
+  vm_name = 'kolla-aio-0'
+  config.vm.define vm_name do |n|
+    n.vm.hostname = vm_name
+    n.vm.provider :vsphere do |vsphere|
+      vsphere.name = vm_name
+      vsphere.memory_mb = 16384
+      vsphere.cpu_count = 6
+      vsphere.networks = [
+        {'network': 'DPortGroup_VPN'}
+      ]
+    end
+    n.vm.provision :ansible do |ansible|
+        ansible.verbose = true
+        ansible.limit = "all"
+        # ansible.galaxy_roles_path = "../../ansible/roles/"
+        # ansible.groups = {
+        # "controller" => (0..CON).map {|j| "kolla-controller-#{j}"},
+        # "compute" => (0..COM).map {|j| "kolla-compute-#{j}"},
+        # "storage" => (0..STO).map {|j| "kolla-storage-#{j}"},
+        # "network" => (0..NET).map {|j| "kolla-network-#{j}"}
+        # }
+        ansible.playbook = "site.yml"
+    end
+  end
+end

@@ -1,0 +1,8 @@
+---
+- name: Install kolla aio
+  hosts: all
+  become: yes
+  vars_files:
+    - global_vars.yml
+  roles:
+    - kolla-aio
