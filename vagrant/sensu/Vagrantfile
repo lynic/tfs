@@ -1,15 +1,13 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+require "vagrant-vsphere"
 require 'yaml'
 
 configs = YAML.load_file("#{Dir.home}/.vagrant.d/vsphere.yaml")
 
 Vagrant.configure("2") do |config|
   config.vm.box = "dummy"
-  # config.vm.box     = 'vsphere'
-  # config.vm.box_url = 'https://vagrantcloud.com/ssx/boxes/vsphere-dummy/versions/0.0.1/providers/vsphere.box'
-  # config.vm.box = "ssx/vsphere-dummy"
   config.ssh.username = configs['ssh']['user']
   config.ssh.password = configs['ssh']['password']
   config.ssh.keys_only = false
@@ -24,33 +22,37 @@ Vagrant.configure("2") do |config|
     # vsphere.resource_pool_name = 'vagrant'
     vsphere.data_store_name = 'datastore1'
 
-    vsphere.name = 'vagrant-vsphere'
-    # vsphere.clone_from_vm = true
     vsphere.template_name = "Templates/CentOS7-Server"
-    # vsphere.template_name = "Templates/Ubuntu16.04.1-Server"
-    # vsphere.template_name = 'test-disks'
     vsphere.vm_base_path = "vagrant-machines"
+    # vsphere.clone_from_vm = true
     vsphere.linked_clone = true
-    vsphere.ssh_cidr = '192.168.1.0/24'
+
+    vsphere.ssh_cidr = '172.20.1.0/24'
   end
 
-  vm_name = 'vsphere-test'
+
+  # Boot ansible
+  vm_name = 'sensu-0'
   config.vm.define vm_name do |n|
     n.vm.hostname = vm_name
     n.vm.provider :vsphere do |vsphere|
       vsphere.name = vm_name
       vsphere.memory_mb = 4096
-      vsphere.cpu_count = 4
+      vsphere.cpu_count = 2
       vsphere.networks = [
-        {'network': 'VM Network'},
-        {'network': 'Dummy'}
+        {'network': 'DPortGroup_VPN'}
       ]
-      vsphere.disks = [
-        {'size': 1},
-        {'size': 1},
-      ]
-      vsphere.cpu_mmu_type = 'hardware'
-      vsphere.nested_hv = true
+    end
+    n.vm.provision :ansible do |ansible|
+        ansible.verbose = true
+        ansible.limit = "all"
+        ansible.galaxy_roles_path = "../../ansible/roles/"
+        ansible.groups = {
+          "rabbitmq" => vm_name,
+          "redis" => vm_name,
+          "sensu" => vm_name,
+        }
+        ansible.playbook = "site.yml"
     end
   end
 end

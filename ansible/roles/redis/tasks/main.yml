@@ -1,0 +1,24 @@
+---
+- name: Install redis
+  yum:
+    state: present
+    # update_cache: yes
+    name: redis
+
+- name: Replace redis host
+  lineinfile:
+    dest: /etc/redis.conf
+    regexp: '^bind'
+    line: "bind {{ redis_host }}"
+
+- name: Replace redis port
+  lineinfile:
+    dest: /etc/redis.conf
+    regexp: '^port'
+    line: "port {{ redis_port }}"
+
+- name: Enable redis
+  systemd:
+    state: restarted
+    enabled: yes
+    name: redis

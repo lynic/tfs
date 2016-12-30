@@ -1,0 +1,14 @@
+{
+ "checks": {
+    "mem_check": {
+        "type": "metric",
+        "command": "/etc/sensu/plugins/check-memory-percent.sh -w 20 -c 10 -p",
+        "subscribers": [
+            "production",
+            "test"
+        ],
+        "interval": 10,
+        "handler": "file"
+    }
+ }
+}

@@ -1,0 +1,102 @@
+---
+- name: Copy sensu repo
+  copy:
+    src: files/sensu.repo
+    dest: /etc/yum.repos.d/sensu.repo
+
+- name: Install sensu and uchiwa
+  yum:
+    state: present
+    update_cache: yes
+    name: "{{ item }}"
+  with_items:
+    - sensu
+    - uchiwa
+
+- name: List rabbitmq vhosts
+  shell: rabbitmqctl list_vhosts
+  register: vhosts
+
+- name: Add rabbitmq vhost
+  shell: rabbitmqctl add_vhost /sensu
+  when: '"/sensu" not in vhosts.stdout_lines'
+
+- name: Add rabbitmq user
+  shell: rabbitmqctl add_user sensu secret
+  when: '"/sensu" not in vhosts.stdout_lines'
+
+- name: Set rabbitmq permission
+  shell: rabbitmqctl set_permissions -p /sensu sensu ".*" ".*" ".*"
+  when: '"/sensu" not in vhosts.stdout_lines'
+
+- name: Configure sensu rabbitmq
+  template:
+    src: templates/sensu_rabbitmq.json
+    dest: /etc/sensu/conf.d/rabbitmq.json
+ 
+- name: Configure sensu redis
+  template:
+    src: templates/sensu_redis.json
+    dest: /etc/sensu/conf.d/redis.json
+
+- name: Configure sensu api
+  template:
+    src: templates/sensu_api.json
+    dest: /etc/sensu/conf.d/api.json
+
+- name: Configure sensu client
+  template:
+    src: templates/sensu_client.json
+    dest: /etc/sensu/conf.d/client.json
+
+# - name: Install memory check plugin
+#   gem:
+#     state: present
+#     executable: /opt/sensu/embedded/bin/gem
+#     name: sensu-plugins-memory-checks
+
+- name: Install memory check plugin
+  get_url:
+    url: https://github.com/sensu-plugins/sensu-plugins-memory-checks/raw/master/bin/check-memory-percent.sh
+    dest: /etc/sensu/plugins/check-memory-percent.sh
+    mode: a+x
+
+- name: Config memory check plugin
+  template:
+    src: templates/mem_check.json
+    dest: /etc/sensu/conf.d/mem_check.json
+
+- name: Configure file handler
+  template:
+    src: templates/file_handler.json
+    dest: /etc/sensu/conf.d/file_handler.json
+
+- name: Configure recurrence filter
+  template:
+    src: templates/recurrence_filter.json
+    dest: /etc/sensu/conf.d/recurr_filter.json
+
+- name: Configure uchiwa
+  template:
+    src: templates/uchiwa.json
+    dest: /etc/sensu/uchiwa.json
+
+- name: Install event-file handler
+  get_url:
+    url: http://sensuapp.org/docs/0.26/files/event-file.rb
+    dest: /etc/sensu/plugins/event-file.rb
+    mode: a+x
+
+- name: start services
+  systemd:
+    state: restarted
+    enabled: yes
+    name: "{{ item }}"
+  with_items:
+    - sensu-server
+    - sensu-client
+    - sensu-api
+    - uchiwa
+
+- name: access uchiwa
+  debug: msg="http://{{ ansible_default_ipv4.address }}:3000"

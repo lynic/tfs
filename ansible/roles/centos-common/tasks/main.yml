@@ -1,0 +1,24 @@
+---
+# - name: Install wget
+#   yum:
+#     state: present
+#     update_cache: yes
+#     name: "{{ item }}"
+#   with_items:
+#     - wget
+
+- name: set enforce to permissive
+  selinux:
+    state: disabled
+
+# - name: Disable enforce
+#   lineinfile:
+#     dest: /etc/selinux/config
+#     regexp: '^SELINUX='
+#     line: "SELINUX=disabled"
+
+- name: disable firewalld
+  systemd:
+    enabled: false
+    state: stopped
+    name: firewalld

@@ -1,0 +1,10 @@
+{
+ "handlers": {
+    "file": { 
+        "type": "pipe", 
+        "command": "/etc/sensu/plugins/event-file.rb",
+        "timeout": 10,
+        "filter": "recurrence" 
+    }
+ }
+}

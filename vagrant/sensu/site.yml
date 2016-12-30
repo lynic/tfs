@@ -1,0 +1,25 @@
+---
+- name: Common roles
+  hosts: all
+  become: yes
+  roles:
+    - centos-common
+
+- name: Install rabbitmq
+  hosts: redis
+  become: yes
+  roles:
+    - rabbitmq
+
+- name: Install redis
+  hosts: redis
+  become: yes
+  roles:
+    - redis
+
+- name: Install sensu
+  hosts: sensu
+  become: yes
+  roles:
+    - sensu
+

@@ -1,0 +1,9 @@
+{
+ "filters": {
+    "recurrence": { 
+        "attributes": {
+            "occurrences": "eval: value > 5" 
+        }
+    }
+ }
+}

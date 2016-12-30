@@ -1,0 +1,6 @@
+{
+ "api": {
+    "host": "{{ sensu_api_host }}",
+    "port": {{ sensu_api_port }}
+ }
+}

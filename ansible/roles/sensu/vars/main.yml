@@ -1,0 +1,9 @@
+---
+uchiwa_host: "{{ ansible_default_ipv4.address }}"
+uchiwa_port: 3000
+sensu_api_host: "{{ ansible_default_ipv4.address }}"
+sensu_api_port: 4567
+rabbitmq_host: "{{ ansible_default_ipv4.address }}"
+rabbitmq_port: 5672
+redis_host: "{{ ansible_default_ipv4.address }}"
+redis_port: 6379
