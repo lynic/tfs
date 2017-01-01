@@ -8,6 +8,7 @@
 #     - wget
 
 - name: set enforce to permissive
+  become: yes
   selinux:
     state: disabled
 
@@ -18,6 +19,7 @@
 #     line: "SELINUX=disabled"
 
 - name: disable firewalld
+  become: yes
   systemd:
     enabled: false
     state: stopped

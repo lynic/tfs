@@ -1,7 +1,7 @@
 ---
 network_interface: "ens160"
-neutron_external_interface: "ens192"
-storage_interface: "ens224"
+# neutron_external_interface: "ens224"
+# storage_interface: "ens192"
 docker_registry: "172.20.1.198"
 docker_namespace: "kolla"
 

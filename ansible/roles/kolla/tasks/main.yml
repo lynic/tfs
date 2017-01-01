@@ -49,25 +49,25 @@
     dest: /etc/kolla/kolla-inventory
 
 - name: bootstrap server
-  shell: kolla-ansible -i /etc/kolla/kolla-inventory bootstrap-servers
+  shell: kolla-ansible -i /etc/kolla/kolla-inventory bootstrap-servers -v > /tmp/kolla-bootstrap.log
 
 - name: prechecks
-  shell: kolla-ansible -i /etc/kolla/kolla-inventory prechecks
+  shell: kolla-ansible -i /etc/kolla/kolla-inventory prechecks -v > /tmp/kolla-prechecks.log
 
 - name: pull kolla images
-  shell: kolla-ansible -i /etc/kolla/kolla-inventory pull
+  shell: kolla-ansible -i /etc/kolla/kolla-inventory pull -v > /tmp/kolla-pull.log
 
 - name: deploy kolla openstack
-  shell: kolla-ansible -i /etc/kolla/kolla-inventory deploy
+  shell: kolla-ansible -i /etc/kolla/kolla-inventory deploy -v > /tmp/kolla-deploy.log
 
 - name: post deploy openstack
-  shell: kolla-ansible -i /etc/kolla/kolla-inventory post-deploy
+  shell: kolla-ansible -i /etc/kolla/kolla-inventory post-deploy -v > /tmp/kolla-postdeploy.log
 
 - name: Generate id_rsa
   shell: ssh-keygen -t rsa -f ~/.ssh/id_rsa -q -b 2048 -N ""
 
 - name: Init resource
-  shell: source /etc/kolla/admin-openrc.sh && /opt/kolla-ansible/tools/init-runonce
+  shell: source /etc/kolla/admin-openrc.sh && /opt/kolla-ansible/tools/init-runonce > /tmp/kolla-init.log
 
 - name: Get admin password
   shell: cat /etc/kolla/passwords.yml |grep keystone_admin_password| cut -d' ' -f2

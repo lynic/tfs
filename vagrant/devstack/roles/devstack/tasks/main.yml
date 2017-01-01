@@ -1,0 +1,31 @@
+---
+- name: Install git
+  become: yes
+  yum:
+    state: present
+    name: "{{ item }}"
+  with_items:
+    - git
+
+- name: Check if devstack cloned
+  stat:
+    path: "/home/{{ ansible_user }}/devstack"
+  register: devstack_st
+
+- name: Clone devstack
+  # become: yes
+  shell: git clone https://github.com/openstack-dev/devstack
+  args:
+    chdir: "/home/{{ ansible_user }}"
+  when: not devstack_st.stat.exists
+
+- name: Copy local.conf
+  # become: yes
+  template:
+    src: templates/local.conf
+    dest: "/home/{{ ansible_user }}/devstack/local.conf"
+
+- name: Run stack.sh
+  shell: ./stack.sh > /tmp/devstack.log
+  args:
+    chdir: "/home/{{ ansible_user }}/devstack"

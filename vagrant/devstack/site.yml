@@ -1,0 +1,13 @@
+---
+- name: Common settings
+  become: yes
+  hosts: all
+  roles:
+    - centos-common
+
+- name: Install devstack
+  hosts: all
+  vars_files:
+    - global_vars.yml
+  roles:
+    - devstack
