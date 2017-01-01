@@ -1,0 +1,18 @@
+---
+- name: Gather facts
+  hosts: all
+  gather_facts: yes
+
+- name: Common Settings
+  hosts: all
+  become: yes
+  roles:
+    - centos-common
+
+- name: Install kolla openstack
+  hosts: ansible
+  vars_files:
+    - global_vars.yml
+  become: yes
+  roles:
+    - kolla

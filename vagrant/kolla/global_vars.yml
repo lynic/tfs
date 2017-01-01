@@ -1,6 +1,11 @@
 ---
-kolla_version: "4.0.0.0b2"
-kolla_ansible_version: "4.0.0.0b2"
-heat: true
-senlin: true
-murano: true
+network_interface: "ens160"
+neutron_external_interface: "ens192"
+storage_interface: "ens224"
+docker_registry: "172.20.1.198"
+docker_namespace: "kolla"
+
+enable_heat: "yes"
+enable_murano: "yes"
+enable_senlin: "yes"
+enable_ceph: "yes"
