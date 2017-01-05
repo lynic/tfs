@@ -1,5 +1,6 @@
-admin_password: password
-libvirt_type: qemu
+---
+admin_password: "password"
+libvirt_type: "qemu"
 heat: true
 senlin: true
 murano: true

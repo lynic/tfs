@@ -13,14 +13,12 @@
   register: devstack_st
 
 - name: Clone devstack
-  # become: yes
   shell: git clone https://github.com/openstack-dev/devstack
   args:
     chdir: "/home/{{ ansible_user }}"
   when: not devstack_st.stat.exists
 
 - name: Copy local.conf
-  # become: yes
   template:
     src: templates/local.conf
     dest: "/home/{{ ansible_user }}/devstack/local.conf"

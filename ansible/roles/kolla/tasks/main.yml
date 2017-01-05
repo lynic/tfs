@@ -43,6 +43,13 @@
 - name: Generate passwords
   shell: cd /opt/kolla-ansible && /usr/bin/cp -f etc/kolla/passwords.yml /etc/kolla/ && kolla-genpwd
 
+- name: Change admin password
+  lineinfile:
+    regexp: "^keystone_admin_password"
+    dest: /etc/kolla/passwords.yml
+    line: "keystone_admin_password: {{ keystone_admin_password }}"
+  when: keystone_admin_password is defined
+
 - name: Generate inventory
   template:
     src: templates/kolla-inventory

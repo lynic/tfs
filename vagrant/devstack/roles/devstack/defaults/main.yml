@@ -4,10 +4,10 @@ mysql_password: "{{ admin_password }}"
 rabbit_password: "{{ admin_password }}"
 service_password: "{{ admin_password }}"
 service_token: "{{ admin_password }}"
-git_base: https://git.openstack.org
-os_branch: master
+git_base: "https://git.openstack.org"
+os_branch: "master"
 
-libvirt_type: qemu
+libvirt_type: "qemu"
 
 horizon: true
 tempest: false

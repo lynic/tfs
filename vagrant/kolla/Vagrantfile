@@ -128,8 +128,8 @@ Vagrant.configure("2") do |config|
         }
         ansible.playbook = "site.yml"
         ansible.extra_vars = {
-          "kolla_ansible_user": "elynn",
-          "kolla_ansible_password": " "
+          "kolla_ansible_user": configs['ssh']['user'],
+          "kolla_ansible_password": configs['ssh']['password']
         }
     end
   end
