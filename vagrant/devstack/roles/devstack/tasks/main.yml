@@ -18,6 +18,11 @@
     chdir: "/home/{{ ansible_user }}"
   when: not devstack_st.stat.exists
 
+- name: Checkout branch
+  shell: "git checkout {{ os_branch }}"
+  args:
+    chdir: "/home/{{ ansible_user }}/devstack"
+
 - name: Copy local.conf
   template:
     src: templates/local.conf

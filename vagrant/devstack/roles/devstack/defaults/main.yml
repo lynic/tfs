@@ -3,7 +3,7 @@ admin_password: Passw0rd
 mysql_password: "{{ admin_password }}"
 rabbit_password: "{{ admin_password }}"
 service_password: "{{ admin_password }}"
-service_token: "{{ admin_password }}"
+# service_token: "{{ admin_password }}"
 git_base: "https://git.openstack.org"
 os_branch: "master"
 
@@ -14,7 +14,7 @@ tempest: false
 senlin: false
 zaqar: false
 lbaas: false
-heat: false
+heat: true
 ceilometer: false
 aodh: false
 gnocchi: false
