@@ -33,7 +33,7 @@ Vagrant.configure("2") do |config|
 
 
   # Boot ansible
-  vm_name = 'devstack-mitaka'
+  vm_name = 'devstack-mitaka-0'
   config.vm.define vm_name do |n|
     n.vm.hostname = vm_name
     n.vm.provider :vsphere do |vsphere|
@@ -48,11 +48,11 @@ Vagrant.configure("2") do |config|
     n.vm.provision :ansible do |ansible|
         ansible.verbose = true
         ansible.limit = "all"
-        ansible.galaxy_roles_path = "../../ansible/roles/"
+        ansible.galaxy_roles_path = "../../../ansible/roles/"
         ansible.groups = {
           "devstack" => vm_name,
         }
-        ansible.playbook = "../site.yml"
+        ansible.playbook = "site.yml"
     end
   end
 end

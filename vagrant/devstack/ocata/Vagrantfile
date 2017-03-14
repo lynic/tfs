@@ -33,7 +33,7 @@ Vagrant.configure("2") do |config|
 
 
   # Boot ansible
-  vm_name = 'devstack-0'
+  vm_name = 'devstack-ocata-0'
   config.vm.define vm_name do |n|
     n.vm.hostname = vm_name
     n.vm.provider :vsphere do |vsphere|

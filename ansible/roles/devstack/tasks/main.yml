@@ -28,6 +28,20 @@
     src: templates/local.conf
     dest: "/home/{{ ansible_user }}/devstack/local.conf"
 
+- name: Upload patches
+  template:
+    src: "templates/{{ item }}"
+    dest: "/home/{{ ansible_user }}/{{ item }}"
+    mode: a+x
+  with_items:
+    - 01-mitaka-requirements.sh
+
+- name: Execute patches
+  shell: "bash -x /home/{{ ansible_user }}/{{ item }}"
+  with_items:
+    - 01-mitaka-requirements.sh
+  when: os_branch == "stable/mitaka"
+
 - name: Run stack.sh
   shell: ./stack.sh > /tmp/devstack.log
   args:

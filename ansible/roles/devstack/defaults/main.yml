@@ -3,12 +3,15 @@ admin_password: Passw0rd
 mysql_password: "{{ admin_password }}"
 rabbit_password: "{{ admin_password }}"
 service_password: "{{ admin_password }}"
-# service_token: "{{ admin_password }}"
+service_token: "{{ admin_password }}"
 git_base: "https://git.openstack.org"
 os_branch: "master"
 
+cpu_ratio: 20
+ram_ratio: 2
 libvirt_type: "qemu"
 
+placement: true
 horizon: true
 tempest: false
 senlin: false

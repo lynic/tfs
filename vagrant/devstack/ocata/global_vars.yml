@@ -1,0 +1,7 @@
+---
+admin_password: "admin"
+libvirt_type: "qemu"
+heat: true
+senlin: true
+murano: true
+os_branch: "stable/ocata"
