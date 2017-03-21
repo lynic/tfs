@@ -17,23 +17,20 @@ Vagrant.configure("2") do |config|
     vsphere.user = configs['vsphere']['user']
     vsphere.password = configs['vsphere']['password']
     vsphere.insecure = true
-    vsphere.data_center_name = "Datacenter"
-    vsphere.compute_resource_name = 'Cluster1'
-    # vsphere.resource_pool_name = 'vagrant'
-    vsphere.data_store_name = 'datastore1'
-
-    # vsphere.name = "kube-#{i}"
-    vsphere.template_name = "Templates/CentOS7-Container"
-    vsphere.vm_base_path = "vagrant-machines"
-    # vsphere.clone_from_vm = true
-    vsphere.linked_clone = true
-
-    vsphere.ssh_cidr = '172.20.1.0/24'
+    vsphere.data_center_name = configs['vsphere']['datacenter']
+    vsphere.compute_resource_name = configs['vsphere']['cluster']
+    vsphere.resource_pool_name = configs['vsphere']['resource_pool']
+    vsphere.data_store_name = configs['vsphere']['datastore']
+    vsphere.template_name = configs['vsphere']['template']
+    vsphere.vm_base_path = configs['vsphere']['basepath']
+    vsphere.clone_from_vm = configs['vsphere']['clone_vm']
+    vsphere.linked_clone = configs['vsphere']['link_clone']
+    vsphere.ssh_cidr = configs['vsphere']['ssh_cidr']
   end
 
 
   # Boot ansible
-  vm_name = 'devstack-0'
+  vm_name = 'ethan-devstack-master-0'
   config.vm.define vm_name do |n|
     n.vm.hostname = vm_name
     n.vm.provider :vsphere do |vsphere|
@@ -41,7 +38,7 @@ Vagrant.configure("2") do |config|
       vsphere.memory_mb = 12368
       vsphere.cpu_count = 6
       vsphere.networks = [
-        {'network': 'DPortGroup_VPN'}
+        {'network': configs['vsphere']['networks'][0]}
       ]
       vsphere.nested_hv = true
     end
