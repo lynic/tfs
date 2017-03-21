@@ -1,0 +1,15 @@
+---
+- name: Common settings
+  become: yes
+  hosts: all
+  roles:
+    - centos-common
+    - docker
+
+- name: Install openo
+  hosts: all
+  become: yes
+  vars_files:
+    - global_vars.yml
+  roles:
+    - openo

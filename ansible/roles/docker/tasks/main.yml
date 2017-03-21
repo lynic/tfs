@@ -4,11 +4,14 @@
     src: files/docker.repo
     dest: /etc/yum.repos.d/docker.repo
 
-- name: Install docker
+- name: Install docker and docker-py
   yum:
-    state: presented
+    state: present
     update_cache: true
-    name: docker-engine
+    name: "{{ item }}"
+  with_items:
+    - docker-engine
+    - python-docker-py
 
 - name: enable mount shared
   copy:
@@ -19,7 +22,7 @@
   systemd:
     enabled: true
     state: started
-    domain_reload: yes
+    daemon_reload: yes
     name: docker
 
 - name: debug

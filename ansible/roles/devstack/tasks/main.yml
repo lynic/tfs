@@ -48,6 +48,7 @@
     chdir: "/home/{{ ansible_user }}/devstack"
 
 - name: Open port 80 & 6080 for horizon
+  become: yes
   iptables:
     chain: INPUT
     action: insert

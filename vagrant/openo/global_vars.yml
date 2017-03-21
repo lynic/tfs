@@ -1,0 +1,9 @@
+---
+kolla_install_type: "source"
+openstack_release: "3.0.1"
+docker_registry: "hub.trystack.cn"
+docker_namespace: "kolla"
+network_interface: "ens160"
+murano: "yes"
+senlin: "yes"
+nova_virt_type: "qemu"
