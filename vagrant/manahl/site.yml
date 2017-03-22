@@ -1,0 +1,13 @@
+---
+- name: Common settings
+  become: yes
+  hosts: all
+  roles:
+    - centos-common
+    - docker
+
+- name: Install arctic
+  become: yes
+  hosts: all
+  roles:
+    - arctic

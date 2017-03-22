@@ -1,0 +1,60 @@
+---
+- name: Install pip and mongodb
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - python-pip
+    # - mongodb-server
+    - Cython
+    # - python-pymongo
+    - python2-lz4
+    # - python3-lz4
+    - python-pandas
+    - gcc
+
+- name: Install arctic
+  pip:
+    name: "{{ item }}"
+    state: present
+    # extra_args: "--user"
+  with_items:
+    - arctic
+
+
+- name: Create dir for mongodb
+  file:
+    path: /opt/data/mongodb
+    state: directory
+    recurse: yes
+
+# - name: Run mongodb
+#   shell: "mongod --dbpath /opt/data/mongodb/ > /tmp/mongodb.log &"
+
+- name: Start mongodb
+  docker_container:
+    name: mongodb
+    image: mongo
+    state: started
+    restart: yes
+    ports:
+      - "27017:27017"
+      - "28017:28017"
+    volumes:
+      - "/opt/data/mongodb:/data/db"
+    command: "--rest --httpinterface"
+
+- name: Upgrade pip
+  pip:
+    name: pip
+    state: latest
+
+- name: Install openssl-devel
+  yum:
+    name: openssl-devel
+    state: present
+
+- name: Install quandl
+  pip:
+    name: quandl
+    state: present
