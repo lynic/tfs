@@ -21,7 +21,7 @@ Vagrant.configure("2") do |config|
     vsphere.compute_resource_name = configs['vsphere']['cluster']
     vsphere.resource_pool_name = configs['vsphere']['resource_pool']
     vsphere.data_store_name = configs['vsphere']['datastore']
-    vsphere.template_name = configs['vsphere']['template']
+    vsphere.template_name = configs['vsphere']['template']['centos']
     vsphere.vm_base_path = configs['vsphere']['basepath']
     vsphere.clone_from_vm = configs['vsphere']['clone_vm']
     vsphere.linked_clone = configs['vsphere']['link_clone']
