@@ -1,0 +1,4 @@
+---
+admin_password: password
+pg_password: "{{ admin_password }}"
+rabbitmq_password: "{{ admin_password }}"

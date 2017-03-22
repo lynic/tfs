@@ -1,0 +1,11 @@
+---
+- name: Common settings
+  become: yes
+  hosts: all
+  roles:
+    - centos-common
+
+- name: Install ansible tower
+  hosts: all
+  roles:
+    - ansible-tower

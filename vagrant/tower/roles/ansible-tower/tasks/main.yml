@@ -1,0 +1,35 @@
+---
+- name: Install ansible
+  become: yes
+  yum:
+    name: ansible
+    state: present
+
+- name: Download ansible tower
+  get_url:
+    url: http://releases.ansible.com/ansible-tower/setup/ansible-tower-setup-latest.tar.gz
+    # url: https://releases.ansible.com/ansible-tower/setup-bundle/ansible-tower-setup-bundle-latest.el7.tar.gz
+    dest: "/home/{{ ansible_user }}/tower.tar.gz"
+
+- name: untar ansible tower
+  unarchive:
+    src: "/home/{{ ansible_user }}/tower.tar.gz"
+    dest: "/home/{{ ansible_user }}"
+    remote_src: yes
+
+- name: Get ansible tower dir
+  shell: "ls -d */"
+  register: out
+
+- name: dbg
+  debug: var=out
+
+- name: Copy inventory
+  template:
+    src: tower-inventory
+    dest: "/home/{{ ansible_user }}/{{ out.stdout_lines[0] }}/inventory"
+
+- name: Run setup.sh
+  shell: "ANSIBLE_SUDO=True ./setup.sh > /tmp/tower.log"
+  args:
+    chdir: "/home/{{ ansible_user }}/{{ out.stdout_lines[0] }}"
