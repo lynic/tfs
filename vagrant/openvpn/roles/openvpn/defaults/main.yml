@@ -1,0 +1,5 @@
+---
+push_dns:
+  - 8.8.8.8
+vpn_port: 1194
+vpn_protocol: udp

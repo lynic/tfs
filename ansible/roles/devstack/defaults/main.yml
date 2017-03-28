@@ -25,3 +25,5 @@ sahara: false
 magnum: false
 barbican: false
 murano: false
+
+net_plugin: ml2

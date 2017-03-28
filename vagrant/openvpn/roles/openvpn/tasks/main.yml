@@ -1,0 +1,120 @@
+---
+- name: Install openvpn
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - openvpn
+    - easy-rsa
+
+- name: Copy server config
+  template:
+    src: server.conf
+    dest: /etc/openvpn/server.conf
+  # shell: "cp /usr/share/doc/openvpn-*/sample/sample-config-files/server.conf /etc/openvpn"
+
+- name: mkdir easy-key
+  shell: "mkdir -p /etc/openvpn/easy-rsa/keys"
+
+- name: cp easy-rsa files
+  shell: "cp -rf /usr/share/easy-rsa/2.0/* /etc/openvpn/easy-rsa"
+
+- name: copy openssl.conf
+  shell: "cp /etc/openvpn/easy-rsa/openssl-1.0.0.cnf /etc/openvpn/easy-rsa/openssl.cnf"
+
+- name: clean ca
+  shell: "source ./vars && ./clean-all"
+  args:
+    chdir: "/etc/openvpn/easy-rsa"
+
+- name: build ca
+  shell: "source ./vars && ./build-ca --batch"
+  args:
+    chdir: "/etc/openvpn/easy-rsa"
+
+- name: build server key
+  shell: "source ./vars && ./build-key-server --batch server"
+  args:
+    chdir: "/etc/openvpn/easy-rsa"
+
+- name: build dh
+  shell: "source ./vars && ./build-dh"
+  args:
+    chdir: "/etc/openvpn/easy-rsa"
+
+- name: build client key
+  shell: "source ./vars && ./build-key --batch client"
+  args:
+    chdir: "/etc/openvpn/easy-rsa"
+
+- name: copy server ca files
+  shell: "cp dh2048.pem ca.crt server.crt server.key /etc/openvpn"
+  args:
+    chdir: "/etc/openvpn/easy-rsa/keys"
+
+- name: mkdir for client keys
+  file:
+    path: "/home/{{ ansible_user }}/client_keys"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+
+- name: copy client config
+  shell: "cp ca.crt client.crt client.key /home/{{ ansible_user }}/client_keys"
+  args:
+    chdir: "/etc/openvpn/easy-rsa/keys"
+
+- name: copy client ovpn
+  template:
+    src: client.ovpn
+    dest: "/home/{{ ansible_user }}/client_keys/client.ovpn"
+
+- name: Change client files owner
+  file:
+    path: "/home/{{ ansible_user }}/client_keys/{{ item }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+  with_items:
+    - ca.crt
+    - client.crt
+    - client.key
+    - client.ovpn
+
+# - name: Start firewalld
+#   systemd:
+#     name: firewalld
+#     state: started
+#     enabled: yes
+
+# - name: open vpn port
+#   firewalld:
+#     port: "{{ vpn_port }}/{{ vpn_protocol }}"
+#     state: enabled
+#     permanent: true
+#     zone: public
+
+# - name: set masquerade
+#   firewalld:
+#     masquerade: yes
+#     state: enabled
+#     permanent: true
+#     zone: public
+
+- name: masqureade
+  iptables:
+    table: nat
+    chain: POSTROUTING
+    source: 10.8.0.0/24
+    jump: MASQUERADE
+
+- name: set sysctl to forward ipv4
+  sysctl:
+    name: "net.ipv4.ip_forward"
+    value: 1
+    reload: yes
+
+- name: start openvpn
+  systemd:
+    name: openvpn@server
+    state: started
+    enabled: yes

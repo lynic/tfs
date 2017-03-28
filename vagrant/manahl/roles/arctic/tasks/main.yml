@@ -5,7 +5,7 @@
     state: present
   with_items:
     - python-pip
-    # - mongodb-server
+    - mongodb
     - Cython
     # - python-pymongo
     - python2-lz4

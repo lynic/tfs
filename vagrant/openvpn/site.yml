@@ -1,0 +1,14 @@
+---
+- name: Common settings
+  become: yes
+  hosts: all
+  roles:
+    - centos-common
+
+- name: Install openvpn
+  become: yes
+  hosts: all
+  vars_files:
+    - global_vars.yml
+  roles:
+    - openvpn
