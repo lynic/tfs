@@ -1,0 +1,8 @@
+---
+admin_password: "admin"
+heat: true
+senlin: true
+vmware: true
+os_branch: "stable/ocata"
+net_plugin: "vmware_nsx_v"
+ip_version: 4

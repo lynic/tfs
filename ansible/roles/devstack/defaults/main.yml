@@ -7,6 +7,7 @@ service_token: "{{ admin_password }}"
 git_base: "https://git.openstack.org"
 os_branch: "master"
 
+ip_version: "4+6"
 cpu_ratio: 20
 ram_ratio: 2
 libvirt_type: "qemu"
@@ -25,5 +26,26 @@ sahara: false
 magnum: false
 barbican: false
 murano: false
+vmware: false
 
 net_plugin: ml2
+
+# vmware
+vcenter_ip:
+vcenter_user:
+vcenter_password:
+vcenter_cluster:
+vcenter_datacenter:
+vcenter_datastore:
+vcenter_dvs_name:
+
+nsx_url:
+nsx_user:
+nsx_password:
+nsx_transport_zone:
+nsx_dvs:
+nsx_datacenter:
+nsx_datastore:
+nsx_resource_pool:
+nsx_external_network:
+nsx_cluster:

@@ -1,0 +1,74 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+require "vagrant-vsphere"
+require 'yaml'
+
+configs = YAML.load_file("#{Dir.home}/.vagrant.d/vsphere.yaml")
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "dummy"
+  config.ssh.username = configs['ssh']['user']
+  config.ssh.password = configs['ssh']['password']
+  config.ssh.keys_only = false
+
+  config.vm.provider :vsphere do |vsphere|
+    vsphere.host = configs['vsphere']['vcenter']
+    vsphere.user = configs['vsphere']['user']
+    vsphere.password = configs['vsphere']['password']
+    vsphere.insecure = true
+    vsphere.data_center_name = configs['vsphere']['datacenter']
+    vsphere.compute_resource_name = configs['vsphere']['cluster']
+    vsphere.resource_pool_name = configs['vsphere']['resource_pool']
+    vsphere.data_store_name = configs['vsphere']['datastore']
+    vsphere.template_name = configs['vsphere']['template']['centos']
+    vsphere.vm_base_path = configs['vsphere']['basepath']
+    vsphere.clone_from_vm = configs['vsphere']['clone_vm']
+    vsphere.linked_clone = configs['vsphere']['link_clone']
+    vsphere.ssh_cidr = configs['vsphere']['ssh_cidr']
+  end
+
+
+  # Boot ansible
+  vm_name = 'ethan-devstack-vmware-ocata-0'
+  config.vm.define vm_name do |n|
+    n.vm.hostname = vm_name
+    n.vm.provider :vsphere do |vsphere|
+      vsphere.name = vm_name
+      vsphere.memory_mb = 12368
+      vsphere.cpu_count = 6
+      vsphere.networks = [
+        {'network': configs['vsphere']['networks'][0]}
+      ]
+      vsphere.nested_hv = true
+    end
+    n.vm.provision :ansible do |ansible|
+        ansible.verbose = true
+        ansible.limit = "all"
+        ansible.galaxy_roles_path = "../../../ansible/roles/"
+        ansible.groups = {
+          "devstack" => vm_name,
+        }
+        ansible.playbook = "site.yml"
+        ansible.extra_vars = {
+          'vcenter_user': configs['vsphere']['user'],
+          'vcenter_password': configs['vsphere']['password'],
+          'vcenter_ip': configs['vsphere']['vcenter'],
+          'vcenter_cluster': configs['vsphere']['cluster'],
+          'vcenter_datastore': configs['vsphere']['datastore'],
+          'vcenter_datacenter': configs['vsphere']['datacenter'],
+          # 'vcenter_dvs_name': configs['vsphere']['networks'][0],
+,          'nsx_url': configs['nsx']['url'],
+          'nsx_user': configs['nsx']['user'],
+          'nsx_password': configs['nsx']['password'],
+          'nsx_transport_zone': configs['nsx']['transport_zone'],
+          'nsx_dvs': configs['nsx']['dvs'],
+          'nsx_datacenter': configs['nsx']['datacenter'],
+          'nsx_datastore': configs['nsx']['datastore'],
+          'nsx_resource_pool': configs['nsx']['resource_pool'],
+          'nsx_external_network': configs['nsx']['port_group'],
+          'nsx_cluster': configs['nsx']['cluster'],
+        }
+    end
+  end
+end
