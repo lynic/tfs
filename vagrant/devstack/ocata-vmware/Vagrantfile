@@ -58,7 +58,7 @@ Vagrant.configure("2") do |config|
           'vcenter_datastore': configs['vsphere']['datastore'],
           'vcenter_datacenter': configs['vsphere']['datacenter'],
           # 'vcenter_dvs_name': configs['vsphere']['networks'][0],
-,          'nsx_url': configs['nsx']['url'],
+          'nsx_url': configs['nsx']['url'],
           'nsx_user': configs['nsx']['user'],
           'nsx_password': configs['nsx']['password'],
           'nsx_transport_zone': configs['nsx']['transport_zone'],

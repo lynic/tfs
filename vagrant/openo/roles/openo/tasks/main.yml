@@ -9,7 +9,10 @@
     - openoint/gso-service-gateway
     - openoint/gso-service-manager
     - openoint/gso-gui-portal
+    - openoint/multivim-broker
     - openoint/multivim-driver-vio
+    - openoint/multivim-driver-newton
+    - openoint/gvnfm-vnflcm
 
 - name: Start msb
   docker_container:
@@ -20,15 +23,29 @@
 
 - name: Start other service
   docker_container:
-    name: "{{ item }}"
-    image: "openoint/{{ item }}"
+    name: "{{ item.name }}"
+    image: "openoint/{{ item.name }}"
     env:
       MSB_ADDR: "172.17.0.2:80"
+    ports:
+      - "{{ item.port }}:{{ item.port }}"
   with_items:
-    - gso-service-gateway
-    - common-services-extsys
-    - common-services-drivermanager
-    - gso-gui-portal
-    - gso-service-manager
-    - multivim-driver-vio
+    - name: gso-service-gateway
+      port: 8305
+    - name: common-services-extsys
+      port: 8100
+    - name: common-services-drivermanager
+      port: 8103
+    - name: gso-gui-portal
+      port: 8300
+    - name: gso-service-manager
+      port: 8301
+    - name: multivim-broker
+      port: 9001
+    - name: multivim-driver-vio
+      port: 9004
+    - name: multivim-driver-newton
+      port: 9003
+    - name: gvnfm-vnflcm
+      port: 8801
 
