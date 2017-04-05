@@ -29,6 +29,7 @@ murano: false
 vmware: false
 
 net_plugin: ml2
+# floating:
 
 # vmware
 vcenter_ip:

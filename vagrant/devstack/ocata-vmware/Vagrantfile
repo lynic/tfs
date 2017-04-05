@@ -68,6 +68,7 @@ Vagrant.configure("2") do |config|
           'nsx_resource_pool': configs['nsx']['resource_pool'],
           'nsx_external_network': configs['nsx']['port_group'],
           'nsx_cluster': configs['nsx']['cluster'],
+          'floating': configs['nsx']['external']
         }
     end
   end
