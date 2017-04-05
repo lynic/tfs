@@ -35,8 +35,8 @@ Vagrant.configure("2") do |config|
     n.vm.hostname = vm_name
     n.vm.provider :vsphere do |vsphere|
       vsphere.name = vm_name
-      vsphere.memory_mb = 12368
-      vsphere.cpu_count = 6
+      vsphere.memory_mb = 8192
+      vsphere.cpu_count = 4
       vsphere.networks = [
         {'network': configs['vsphere']['networks'][0]}
       ]
