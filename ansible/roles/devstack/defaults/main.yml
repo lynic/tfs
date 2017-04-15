@@ -4,7 +4,8 @@ mysql_password: "{{ admin_password }}"
 rabbit_password: "{{ admin_password }}"
 service_password: "{{ admin_password }}"
 service_token: "{{ admin_password }}"
-git_base: "https://git.openstack.org"
+# git_base: "https://git.openstack.org"
+git_base: "https://github.com"
 os_branch: "master"
 
 ip_version: "4+6"
@@ -26,6 +27,7 @@ sahara: false
 magnum: false
 barbican: false
 murano: false
+swift: false
 vmware: false
 
 net_plugin: ml2
