@@ -1,0 +1,15 @@
+version: '3'
+services:
+  stock:
+    build:
+      context: .
+    image: 'duokan:latest'
+    volumes:
+      - ../common.py:/opt/common.py
+      - .:/opt/duokan
+      - $HOME/.vagrant.d/config.yaml:/etc/config.yaml
+    command:
+      # - bash
+      - python3
+      - /opt/duokan/get_book.py
+      - --favorite
