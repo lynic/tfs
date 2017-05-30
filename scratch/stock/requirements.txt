@@ -1,7 +1,9 @@
 
-
 beautifulsoup4
 pymongo
 pyyaml
 pathos
 pandas
+lxml
+tushare
+arctic

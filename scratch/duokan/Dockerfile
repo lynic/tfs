@@ -11,5 +11,8 @@ FROM python:3
 #     pip3 install ipdb
 
 # RUN pip install cython numpy && \
-RUN pip install beautifulsoup4 pymongo pyyaml pathos && \
+COPY ./requirements.txt /tmp/duokan-requirements.txt
+# RUN pip install beautifulsoup4 pymongo pyyaml pathos pandas && \
+
+RUN pip install -r /tmp/duokan-requirements.txt && \
     pip install ipdb

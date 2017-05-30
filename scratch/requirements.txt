@@ -1,7 +1,5 @@
 
-
 beautifulsoup4
 pymongo
 pyyaml
 pathos
-pandas

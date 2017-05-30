@@ -16,6 +16,8 @@ import yaml
 import configparser
 import smtplib
 from email.mime.text import MIMEText
+import json
+import pandas as pd
 
 signal.signal(signal.SIGINT, signal.SIG_IGN)
 
@@ -103,18 +105,30 @@ class Store(object):
         self.collection = self.db[db_collection]
 
     def put(self, value):
-        if value.get('_id'):
-            obj_id = value.pop('_id')
+        val = value
+        if isinstance(value, pd.DataFrame):
+            val = value.to_dict()
+        if val.get('_id'):
+            obj_id = val.pop('_id')
             # obj_id = self.collection.update_one({'_id': obj_id}, {'$set': value})
-            obj_id = self.collection.replace_one({'_id': obj_id}, value)
+            obj_id = self.collection.replace_one({'_id': obj_id}, val)
         else:
-            obj_id = self.collection.insert_one(value).inserted_id
+            obj_id = self.collection.insert_one(val).inserted_id
         return obj_id
 
-    def get(self, filter=None):
+    def get(self, filter=None, df=False):
         obj = list(self.collection.find(filter=filter))
-        return obj
+        if df:
+            return [pd.DataFrame.from_dict(i) for i in obj]
+        else:
+            return obj
 
+    def put_df(self, df):
+        ret = self.collection.insert_many(df.to_dict())
+        return ret
+
+    def get_df(self):
+        obj = list(self.collection.find(filter=filter))
 
 class Config(object):
     def __init__(self, file_path):

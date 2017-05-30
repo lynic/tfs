@@ -1,0 +1,46 @@
+version: '3'
+services:
+  index:
+    build:
+      context: .
+    image: 'stock:latest'
+    volumes:
+      - .:/opt/stock
+      - ../common.py:/opt/common.py
+      - $HOME/.vagrant.d/config.yaml:/etc/config.yaml
+    command:
+      - python
+      - /opt/stock/update_index.py
+  stock_hfq:
+    image: 'stock:latest'
+    volumes:
+      - .:/opt/stock
+      - ../common.py:/opt/common.py
+      - $HOME/.vagrant.d/config.yaml:/etc/config.yaml
+    command:
+      - python
+      - /opt/stock/update_stock.py
+      - --autype
+      - hfq
+  stock_qfq:
+    image: 'stock:latest'
+    volumes:
+      - .:/opt/stock
+      - ../common.py:/opt/common.py
+      - $HOME/.vagrant.d/config.yaml:/etc/config.yaml
+    command:
+      - python
+      - /opt/stock/update_stock.py
+      - --autype
+      - qfq
+  stock_none:
+    image: 'stock:latest'
+    volumes:
+      - .:/opt/stock
+      - ../common.py:/opt/common.py
+      - $HOME/.vagrant.d/config.yaml:/etc/config.yaml
+    command:
+      - python
+      - /opt/stock/update_stock.py
+      - --autype
+      - none
