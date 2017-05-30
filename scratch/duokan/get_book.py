@@ -125,18 +125,18 @@ def store_book(books_info):
         stored_book = db.get({'book_id': book['book_id']})
         if stored_book:
             stored_book = stored_book[0]
-            book['_id'] = stored_book['_id']
             if book['lowest_price'] < stored_book['lowest_price']:
                 print('book "%s" has new lowest_price %s' % (
                     book['title'], book['lowest_price']))
-                db2 = Store(
+                db3 = Store(
                     config['mongodb']['server'],
                     config['mongodb']['port'],
                     'tmp',
                     'cheaper_books')
-                db2.put(book)
+                db3.put(book)
             else:
                 need_store = False
+            book['_id'] = stored_book['_id']
         if need_store:
             print('Storing book %s' % book['book_id'])
             db.put(book)
@@ -144,10 +144,8 @@ def store_book(books_info):
 def get_publisher_list():
     publishers = []
     url = 'http://www.duokan.com/publishers'
-    # import ipdb;ipdb.set_trace()
     soup = get_web(url)
     contents = soup.find_all('div', {'class': 'list'})[1].find_all('li')
-    # import ipdb;ipdb.set_trace()
     # Ignore the last one cause it's corparation link
     for item in contents[:-1]:
         publisher_id = item.find('a').attrs['href'].split('/')[2]
@@ -191,5 +189,5 @@ if __name__ == '__main__':
         mail = Mail(config['mail']['server'], config['mail']['user'],
                     config['mail']['password'])
         subject = 'Duokan %s' % datetime.now()
-        mail.send(config['mail']['to'], subject,
+        mail.send(config['mail']['receiver'], subject,
                   json.dumps(six.text_type(cheaper_books), indent=2))
