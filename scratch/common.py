@@ -159,14 +159,17 @@ class ArgParser(object):
         self.parser = argparse.ArgumentParser()
         self.args = None
 
-    def add(self, name, dest=None, nargs=None, action=None, default=None):
+    def add(self, name, dest=None, nargs=None, action=None,
+            default=None, choices=None):
         params = {
             'dest': dest,
             'action': action,
-            'default': default
+            'default': default,
         }
         if nargs:
             params['nargs'] = nargs
+        if choices:
+            params['choices'] = choices
         self.parser.add_argument(name, **params)
 
     def __getitem__(self, key):
