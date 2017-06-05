@@ -30,46 +30,28 @@ Vagrant.configure("2") do |config|
 
 
   # Boot ansible
-  vm_name = 'ethan-devstack-vmware-ocata-0'
+  vm_name = "ethan-shadowsocks-0"
   config.vm.define vm_name do |n|
     n.vm.hostname = vm_name
     n.vm.provider :vsphere do |vsphere|
       vsphere.name = vm_name
-      vsphere.memory_mb = 8192
-      vsphere.cpu_count = 4
+      vsphere.memory_mb = 2048
+      vsphere.cpu_count = 2
       vsphere.networks = [
         {'network': configs['vsphere']['networks'][0]}
       ]
-      vsphere.nested_hv = true
     end
     n.vm.provision :ansible do |ansible|
         ansible.verbose = true
         ansible.limit = "all"
-        ansible.galaxy_roles_path = "../../../ansible/roles/"
-        ansible.groups = {
-          "devstack" => vm_name,
-        }
+        ansible.galaxy_roles_path = "../../ansible/roles/"
+        # ansible.groups = {
+        # "controller" => (0..CON).map {|j| "kolla-controller-#{j}"},
+        # "compute" => (0..COM).map {|j| "kolla-compute-#{j}"},
+        # "storage" => (0..STO).map {|j| "kolla-storage-#{j}"},
+        # "network" => (0..NET).map {|j| "kolla-network-#{j}"}
+        # }
         ansible.playbook = "site.yml"
-        ansible.extra_vars = {
-          'vcenter_user': configs['vsphere']['user'],
-          'vcenter_password': configs['vsphere']['password'],
-          'vcenter_ip': configs['vsphere']['vcenter'],
-          'vcenter_cluster': configs['vsphere']['cluster'],
-          'vcenter_datastore': configs['vsphere']['datastore'],
-          'vcenter_datacenter': configs['vsphere']['datacenter'],
-          # 'vcenter_dvs_name': configs['vsphere']['networks'][0],
-          'nsx_url': configs['nsx']['url'],
-          'nsx_user': configs['nsx']['user'],
-          'nsx_password': configs['nsx']['password'],
-          'nsx_transport_zone': configs['nsx']['transport_zone'],
-          'nsx_dvs': configs['nsx']['dvs'],
-          'nsx_datacenter': configs['nsx']['datacenter'],
-          'nsx_datastore': configs['nsx']['datastore'],
-          'nsx_resource_pool': configs['nsx']['resource_pool'],
-          'nsx_external_network': configs['nsx']['port_group'],
-          'nsx_cluster': configs['nsx']['cluster'],
-          # 'floating': configs['nsx']['external']
-        }
     end
   end
 end

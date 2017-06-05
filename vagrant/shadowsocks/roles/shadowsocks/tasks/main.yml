@@ -1,0 +1,12 @@
+---
+- name: Start shadowsocks
+  docker_container:
+    name: shadowsocks
+    image: oddrationale/docker-shadowsocks
+    state: started
+    ports:
+      - "{{ listen_port }}:{{ listen_port }}"
+    command: "-s 0.0.0.0 -p {{ listen_port }} -k {{ password }} -m {{ encrypt_method }}"
+
+- name: IP
+  debug: msg="{{ ansible_default_ipv4.address }}"
