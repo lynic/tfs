@@ -179,7 +179,6 @@ if __name__ == '__main__':
         publishers = [parser['publisher']]
     elif parser['book']:
         books = [parser['book']]
-    # import ipdb;ipdb.set_trace()
     for publisher in publishers:
         get_books_by_publisher(publisher)
     for book in books:
@@ -189,5 +188,4 @@ if __name__ == '__main__':
         mail = Mail(config['mail']['server'], config['mail']['user'],
                     config['mail']['password'])
         subject = 'Duokan %s' % datetime.now()
-        mail.send(config['mail']['receiver'], subject,
-                  json.dumps(six.text_type(cheaper_books), indent=2))
+        mail.send(config['mail']['receiver'], subject, cheaper_books)

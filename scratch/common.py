@@ -130,6 +130,7 @@ class Store(object):
     def get_df(self):
         obj = list(self.collection.find(filter=filter))
 
+
 class Config(object):
     def __init__(self, file_path):
         self.file_path = file_path
@@ -160,7 +161,7 @@ class ArgParser(object):
         self.args = None
 
     def add(self, name, dest=None, nargs=None, action=None,
-            default=None, choices=None):
+            default=None, choices=[]):
         params = {
             'dest': dest,
             'action': action,
@@ -179,20 +180,30 @@ class ArgParser(object):
 
 
 class Mail(object):
-    def __init__(self, server, user, password):
-        self.server = server
-        self.user = user
-        self.password = password
+    def _login(self):
         self.client = smtplib.SMTP()
         self.client.connect(self.server)
         self.client.login(self.user, self.password)
 
+    def __init__(self, server, user, password):
+        self.server = server
+        self.user = user
+        self.password = password
+        self._login()
+
     def send(self, receivers, subject, message):
         if not isinstance(receivers, list):
             receivers = [receivers]
+        if not isinstance(message, str):
+            message = str(message)
         msg = MIMEText(message, _subtype='plain', _charset='utf-8')
         me = '%s <%s>' % (self.user, self.user)
         msg['From'] = me
         msg['To'] = ';'.join(receivers)
         msg['Subject'] = subject
-        self.client.sendmail(self.user, receivers, msg.as_string())
+        try:
+            self.client.sendmail(self.user, receivers, msg.as_string())
+        except smtplib.SMTPServerDisconnected as ex:
+            self._login()
+            self.client.sendmail(self.user, receivers, msg.as_string())
+

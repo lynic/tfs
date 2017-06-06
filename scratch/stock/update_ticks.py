@@ -44,7 +44,7 @@ def update_ticks(stock_id, src='tt'):
     dates = get_dates(stock_id)
     if not dates:
         return
-    lib_name = 'Stocks_Ticks.%s' % stock_id
+    lib_name = 'Stocks_Ticks_%s.%s' % (src, stock_id)
     library = get_library(lib_name)
     stored_dates = library.list_symbols()
     for date in dates:
@@ -58,6 +58,7 @@ def update_ticks(stock_id, src='tt'):
         try:
             data = ts.get_tick_data(stock_id, date=date, src=src)
         except Exception as ex:
+            traceback.print_exc()
             continue
         if data is None or len(data) == 3:
             # No ticks today
