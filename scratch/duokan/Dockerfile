@@ -16,3 +16,5 @@ COPY ./requirements.txt /tmp/duokan-requirements.txt
 
 RUN pip install -r /tmp/duokan-requirements.txt && \
     pip install ipdb
+
+WORKDIR /opt/duokan

@@ -3,6 +3,7 @@ import tushare as ts
 import arctic
 import six
 import traceback
+import time
 
 from common import Config
 from common import ArgParser
@@ -56,6 +57,8 @@ def update_ticks(stock_id, src='tt'):
         print('Trying to get %s %s' % (stock_id, date))
         # import ipdb;ipdb.set_trace()
         try:
+            print("sleep")
+            time.sleep(3)
             data = ts.get_tick_data(stock_id, date=date, src=src)
         except Exception as ex:
             traceback.print_exc()

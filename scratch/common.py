@@ -17,27 +17,36 @@ import configparser
 import smtplib
 from email.mime.text import MIMEText
 import json
-import pandas as pd
+# import pandas as pd
+import pickle
+import requests
 
 signal.signal(signal.SIGINT, signal.SIG_IGN)
 
 
-def get_web(url, retry=3, timeout=7, encoding='GB2312'):
+def get_web(url, retry=3, timeout=7, encoding='GB2312', data=None, method='GET', to_json=False):
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows; U; '
                       'Windows NT 6.1; en-US; rv:1.9.1.6) '
                       'Gecko/20091201 Firefox/3.5.6',
+        'Content-Type': 'application/json'
     }
+    if data is not None:
+        data = str(data)
+        if method == 'GET':
+            method = 'POST'
     soup = None
     try_count = 0
     while 1:
         try:
-            req = urllib.request.Request(url, headers=headers)
-            rsp = urllib.request.urlopen(req, timeout=timeout)
-            html = rsp.read()
+
+            response = requests.request(method, url, data=data,
+                                        headers=headers, timeout=timeout)
+            html = response.text
+            # req = urllib.request.Request(url, headers=headers, data=data)
+            # rsp = urllib.request.urlopen(req, timeout=timeout)
+            # html = rsp.read()
             # soup = BeautifulSoup(html, "html.parser", from_encoding=encoding)
-            soup = BeautifulSoup(html, "html.parser")
-            rsp.close()
             break
         # except (urllib2.URLError, socket.timeout) as ex:
         except Exception as ex:
@@ -46,7 +55,10 @@ def get_web(url, retry=3, timeout=7, encoding='GB2312'):
             if try_count >= retry:
                 break
             try_count += 1
-
+    try:
+        soup = json.loads(html)
+    except Exception as ex:
+        soup = BeautifulSoup(html, "html.parser")
     return soup
 
 
@@ -106,8 +118,6 @@ class Store(object):
 
     def put(self, value):
         val = value
-        if isinstance(value, pd.DataFrame):
-            val = value.to_dict()
         if val.get('_id'):
             obj_id = val.pop('_id')
             # obj_id = self.collection.update_one({'_id': obj_id}, {'$set': value})
@@ -116,19 +126,25 @@ class Store(object):
             obj_id = self.collection.insert_one(val).inserted_id
         return obj_id
 
-    def get(self, filter=None, df=False):
+    def get(self, filter=None):
         obj = list(self.collection.find(filter=filter))
-        if df:
-            return [pd.DataFrame.from_dict(i) for i in obj]
-        else:
-            return obj
+        return obj
 
-    def put_df(self, df):
-        ret = self.collection.insert_many(df.to_dict())
-        return ret
+    def pickle_put(self, value, pickle_key=[]):
+        for pk in pickle_key:
+            value[pk] = pickle.dumps(value[pk])
+        value['_pickle_key'] = pickle_key
+        # key['data'] = pickle.dumps(value)
+        # ret = self.collection.insert_one(val).inser
+        return self.put(value)
 
-    def get_df(self):
-        obj = list(self.collection.find(filter=filter))
+    def pickle_get(self, filter=None):
+        obj = self.get(filter=filter)
+        for oo in obj:
+            for pk in oo.get('_pickle_key', []):
+                oo[pk] = pickle.loads(oo[pk])
+            oo.pop('_pickle_key')
+        return obj
 
 
 class Config(object):
