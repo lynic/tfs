@@ -2,4 +2,4 @@
 beautifulsoup4
 pymongo
 pyyaml
-pathos
+python-dateutil

@@ -20,8 +20,19 @@ import json
 # import pandas as pd
 import pickle
 import requests
+from datetime import datetime
 
-signal.signal(signal.SIGINT, signal.SIG_IGN)
+# signal.signal(signal.SIGINT, signal.SIG_IGN)
+
+
+def to_time(val_t):
+    if isinstance(val_t, int):
+        return datetime.fromtimestamp(val_t/1e3)
+    if isinstance(val_t, str):
+        import dateutil
+        return dateutil.parser.parse(val_t)
+    else:
+        return datetime.fromtimestamp(0)
 
 
 def get_web(url, retry=3, timeout=7, encoding=None, data=None, method='GET', params=None):

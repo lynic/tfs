@@ -36,11 +36,14 @@ def get_fund_detail(fund):
     content = soup.find('tbody').find_all('td')
     # datetime.strptime('2011-01-01', '%Y-%m-%d')
     # name = 'test'
+    created_time = datetime.strptime(content[6].get_text(), '%Y-%m-%d') if content[6].get_text() else datetime.fromtimestamp(0)
+    record_time = datetime.strptime(content[8].get_text(), '%Y-%m-%d') if content[8].get_text() else datetime.fromtimestamp(0)
+    update_time = datetime.strptime(content[26].get_text(), '%Y-%m-%d') if content[26].get_text() else datetime.fromtimestamp(0)
     ret = {
         'name': content[1].get_text(),
         'fundNo': content[4].get_text(),
-        'created_time': datetime.strptime(content[6].get_text(), '%Y-%m-%d'),
-        'record_time': datetime.strptime(content[8].get_text(), '%Y-%m-%d'),
+        'created_time': created_time,
+        'record_time': record_time,
         'record_period': content[10].get_text(),
         'fund_type': content[12].get_text(),
         'currency': content[14].get_text(),
@@ -49,7 +52,7 @@ def get_fund_detail(fund):
         'trustee': content[20].get_text(),
         'investment_area': content[22].get_text(),
         'status': content[24].get_text(),
-        'update_time': datetime.strptime(content[26].get_text(), '%Y-%m-%d'),
+        'update_time': update_time,
         'notice': content[28].get_text(),
         'report_month': content[31].get_text(),
         'report_half_year': content[33].get_text(),
