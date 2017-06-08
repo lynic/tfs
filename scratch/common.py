@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from six.moves import urllib
+# from six.moves import urllib
 from bs4 import BeautifulSoup
 import time
 import traceback
@@ -24,7 +24,7 @@ import requests
 signal.signal(signal.SIGINT, signal.SIG_IGN)
 
 
-def get_web(url, retry=3, timeout=7, encoding='GB2312', data=None, method='GET', to_json=False):
+def get_web(url, retry=3, timeout=7, encoding=None, data=None, method='GET', params=None):
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows; U; '
                       'Windows NT 6.1; en-US; rv:1.9.1.6) '
@@ -41,7 +41,9 @@ def get_web(url, retry=3, timeout=7, encoding='GB2312', data=None, method='GET',
         try:
 
             response = requests.request(method, url, data=data,
-                                        headers=headers, timeout=timeout)
+                                        headers=headers, timeout=timeout, params=params)
+            if encoding:
+                response.encoding = encoding
             html = response.text
             # req = urllib.request.Request(url, headers=headers, data=data)
             # rsp = urllib.request.urlopen(req, timeout=timeout)
@@ -116,19 +118,27 @@ class Store(object):
             self.db.drop_collection(db_collection)
         self.collection = self.db[db_collection]
 
-    def put(self, value):
-        val = value
-        if val.get('_id'):
-            obj_id = val.pop('_id')
-            # obj_id = self.collection.update_one({'_id': obj_id}, {'$set': value})
-            obj_id = self.collection.replace_one({'_id': obj_id}, val)
+    def put(self, value, key=None, skip=False):
+        obj_id = None
+        if value.get('_id'):
+            obj_id = value.pop('_id')
+        if key:
+            record = self.get(filter={key: value[key]})
+            if record:
+                obj_id = record[0].get('_id')
+        if obj_id and not skip:
+            obj_id = self.collection.replace_one({'_id': obj_id}, value)
         else:
-            obj_id = self.collection.insert_one(val).inserted_id
+            obj_id = self.collection.insert_one(value).inserted_id
         return obj_id
 
-    def get(self, filter=None):
-        obj = list(self.collection.find(filter=filter))
-        return obj
+    def get(self, filter=None, projection=None):
+        objs = list(self.collection.find(filter=filter, projection=projection))
+        return objs
+
+    def get_field(self, key=None):
+        objs = self.get(projection={key: 1})
+        return [o[key] for o in objs]
 
     def pickle_put(self, value, pickle_key=[]):
         for pk in pickle_key:

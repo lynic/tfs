@@ -1,0 +1,15 @@
+version: '3'
+services:
+  ss:
+    build:
+      context: .
+    image: 'ss:latest'
+    volumes:
+      - ../common.py:/opt/common.py
+      - .:/opt/ss
+      - $HOME/.vagrant.d/config.yaml:/etc/config.yaml
+    command:
+      # - bash
+      - python3
+      # - /opt/ss/get_book.py
+      # - --favorite
