@@ -2,9 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import six
-from six.moves import urllib
-# import urllib2
-from bs4 import BeautifulSoup
 import time
 import traceback
 import re
@@ -22,6 +19,8 @@ from common import Mail
 
 
 def store_fund_detail(fund_detail):
+    if not fund_detail:
+        return
     config = Config('/etc/config.yaml')
     db = Store(config['mongodb']['server'], config['mongodb']['port'],
                'ss', 'fund_details')
@@ -32,6 +31,8 @@ def get_fund_detail(fund):
     print('Getting fund_detail %s' % fund['fundNo'])
     url = 'http://gs.amac.org.cn/amac-infodisc/res/pof/fund/%s' % fund['url']
     soup = get_web(url, encoding='UTF-8')
+    if not soup:
+        return {}
     content = soup.find('tbody').find_all('td')
     # datetime.strptime('2011-01-01', '%Y-%m-%d')
     # name = 'test'
@@ -77,18 +78,16 @@ def get_all_funds(debug=False):
     config = Config('/etc/config.yaml')
     db = Store(config['mongodb']['server'], config['mongodb']['port'],
                'ss', 'fund_list')
+    db2 = Store(config['mongodb']['server'], config['mongodb']['port'],
+               'ss', 'fund_details')
     stored_fund = db.get_field(key='fundNo')
+    sotred_fund_details = db2.get_field(key='fundNo')
     pool = ThreadPool(10, debug=debug)
     for fund in fund_list['content']:
-        if fund['fundNo'] in stored_fund:
-            continue
-        pool.add_task(store_fund, fund)
-        # store_fund(fund)
-    # stored_fund = db.get()
-    # for fund in stored_fund:
-        pool.add_task(_thread_fund_detail, fund)
-        # fund_detail = get_fund_detail(fund)
-        # store_fund_detail(fund_detail)
+        if fund['fundNo'] not in stored_fund:
+            pool.add_task(store_fund, fund)
+        if fund['fundNo'] not in sotred_fund_details:
+            pool.add_task(_thread_fund_detail, fund)
     pool.run()
     # import ipdb;ipdb.set_trace()
     return fund_list['content']

@@ -7,7 +7,7 @@ import six
 
 from common import Config
 
-indexes = [{'code': '000001', 'name': 'sh'}, {'code': '399001', 'name': 'sz'}, {'code': '399005', 'name': 'zx'}, {'code': '399006', 'name': 'cy'}]
+# indexes = [{'code': '000001', 'name': 'sh'}, {'code': '399001', 'name': 'sz'}, {'code': '399005', 'name': 'zx'}, {'code': '399006', 'name': 'cy'}]
 
 if __name__ == '__main__':
     config = Config('/etc/config.yaml')
@@ -22,7 +22,9 @@ if __name__ == '__main__':
         store.initialize_library(lib_name)
         library = store[lib_name]
 
-    for ind in indexes:
-        print('Handle %s %s' % (lib_name, ind['code']))
-        data = ts.get_k_data(ind['code'], index=True, start='1990-01-01')
-        library.write(ind['code'], data)
+    df = ts.get_index()
+    indexes = df['code'].tolist()
+    for index in indexes:
+        print('Handle %s %s' % (lib_name, index))
+        data = ts.get_k_data(index, index=True, start='1990-01-01')
+        library.write(index, data)
