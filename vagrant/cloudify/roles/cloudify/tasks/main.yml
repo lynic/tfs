@@ -1,0 +1,27 @@
+---
+
+- name: Download CLI
+  shell: "curl -L -o /tmp/cloudify.rpm http://repository.cloudifysource.org/cloudify/4.0.1/sp-release/cloudify-{{ cloudify_manager_version }}~sp.el6.x86_64.rpm"
+
+- name: Install Cloudify CLI
+  become: yes
+  shell: "yum -y install /tmp/cloudify.rpm"
+
+- name: Generate id_rsa
+  shell: ssh-keygen -t rsa -f ~/.ssh/id_rsa -q -b 2048 -N ""
+
+- name: Configure password-less ssh
+  shell: cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+
+- name: Copy inputs.yaml
+  template:
+    src: simple-manager-blueprint-inputs.yaml
+    dst: /opt/simple-manager-blueprint-inputs.yaml
+
+- name: Install cloudify
+  shell: cfy bootstrap simple-manager-blueprint.yaml -i /opt/simple-manager-blueprint-inputs.yaml
+  args:
+    chdir: /opt/cfy/cloudify-manager-blueprints/
+
+- name: Check Status
+  shell: cfy status

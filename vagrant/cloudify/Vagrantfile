@@ -1,0 +1,55 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+require "vagrant-vsphere"
+require 'yaml'
+
+configs = YAML.load_file("#{Dir.home}/.vagrant.d/vsphere.yaml")
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "dummy"
+  config.ssh.username = configs['ssh']['user']
+  config.ssh.password = configs['ssh']['password']
+  config.ssh.keys_only = false
+
+  config.vm.provider :vsphere do |vsphere|
+    vsphere.host = configs['vsphere']['vcenter']
+    vsphere.user = configs['vsphere']['user']
+    vsphere.password = configs['vsphere']['password']
+    vsphere.insecure = true
+    vsphere.data_center_name = configs['vsphere']['datacenter']
+    vsphere.compute_resource_name = configs['vsphere']['cluster']
+    vsphere.resource_pool_name = configs['vsphere']['resource_pool']
+    vsphere.data_store_name = configs['vsphere']['datastore']
+    vsphere.template_name = configs['vsphere']['template']['centos']
+    vsphere.vm_base_path = configs['vsphere']['basepath']
+    vsphere.clone_from_vm = configs['vsphere']['clone_vm']
+    vsphere.linked_clone = configs['vsphere']['link_clone']
+    vsphere.ssh_cidr = configs['vsphere']['ssh_cidr']
+  end
+
+
+  # Boot ansible
+  vm_name = 'ethan-cloudify-master-0'
+  config.vm.define vm_name do |n|
+    n.vm.hostname = vm_name
+    n.vm.provider :vsphere do |vsphere|
+      vsphere.name = vm_name
+      vsphere.memory_mb = 6144
+      vsphere.cpu_count = 2
+      vsphere.networks = [
+        {'network': configs['vsphere']['networks'][0]}
+      ]
+      vsphere.nested_hv = true
+    end
+    n.vm.provision :ansible do |ansible|
+        ansible.verbose = true
+        ansible.limit = "all"
+        ansible.galaxy_roles_path = "../../ansible/roles/"
+        ansible.groups = {
+          "cloudify" => vm_name,
+        }
+        ansible.playbook = "site.yml"
+    end
+  end
+end
