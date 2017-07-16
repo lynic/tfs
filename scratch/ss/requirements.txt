@@ -6,3 +6,4 @@ pyyaml
 pathos
 pandas
 requests
+python-dateutil

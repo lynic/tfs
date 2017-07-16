@@ -13,19 +13,19 @@ debug=False
 
 def get_library(lib_name):
     config = Config('/etc/config.yaml')
-    store = arctic.Arctic(config['mongodb']['server'], config['mongodb']['port'])
+    store = arctic.Arctic('{}:{}'.format(config['mongodb']['server'], config['mongodb']['port']))
     try:
         library = store.get_library(lib_name)
     except Exception as ex:
         print(six.text_type(ex))
-        print('Initilize library %s' % lib_name) 
+        print('Initilize library %s' % lib_name)
         store.initialize_library(lib_name)
         library = store[lib_name]
     return library
 
 def update_stock(stock_id, lib_name, update=False):
     config = Config('/etc/config.yaml')
-    store = arctic.Arctic(config['mongodb']['server'], config['mongodb']['port'])
+    store = arctic.Arctic('{}:{}'.format(config['mongodb']['server'], config['mongodb']['port']))
     library = store.get_library(lib_name)
     store_flag = True
     if update:

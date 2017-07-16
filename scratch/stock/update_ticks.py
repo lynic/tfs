@@ -13,19 +13,19 @@ from common import Store
 
 def get_library(lib_name):
     config = Config('/etc/config.yaml')
-    store = arctic.Arctic(config['mongodb']['server'], config['mongodb']['port'])
+    store = arctic.Arctic('{}:{}'.format(config['mongodb']['server'], config['mongodb']['port']))
     try:
         library = store.get_library(lib_name)
     except Exception as ex:
         print(six.text_type(ex))
-        print('Initilize library %s' % lib_name) 
+        print('Initilize library %s' % lib_name)
         store.initialize_library(lib_name)
         library = store[lib_name]
     return library
 
 def get_dates(stock_id):
     config = Config('/etc/config.yaml')
-    store = arctic.Arctic(config['mongodb']['server'], config['mongodb']['port'])
+    store = arctic.Arctic('{}:{}'.format(config['mongodb']['server'], config['mongodb']['port']))
     library = store.get_library('Stocks_Daily.none')
     try:
         datas = library.read(stock_id).data
@@ -41,7 +41,7 @@ def update_ticks(stock_id, src='tt'):
     # tick_store = Store(
     #     config['mongodb']['server'], config['mongodb']['port'],
     #     'stock-ticks', stock_id)
-    store = arctic.Arctic(config['mongodb']['server'], config['mongodb']['port'])
+    store = arctic.Arctic('{}:{}'.format(config['mongodb']['server'], config['mongodb']['port']))
     dates = get_dates(stock_id)
     if not dates:
         return

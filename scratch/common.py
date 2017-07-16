@@ -147,6 +147,10 @@ class Store(object):
         objs = list(self.collection.find(filter=filter, projection=projection))
         return objs
 
+    def remove(filter):
+        result = self.collection.delete_many(filter)
+        return result
+
     def get_field(self, key=None):
         objs = self.get(projection={key: 1})
         return [o[key] for o in objs]
@@ -166,6 +170,40 @@ class Store(object):
                 oo[pk] = pickle.loads(oo[pk])
             oo.pop('_pickle_key')
         return obj
+
+
+class Signal(object):
+    def __init__(self, db_host, db_port):
+        self.store = Store(db_host, db_port, 'tmp', 'signal')
+
+    def send(signal, count=-1):
+        self.store.put({'key': signal, 'time': datetime.utcnow(),
+                        'count': count})
+
+    def wait(signal, timeout=1800, interval=10):
+        # delta is the minutes that new signal arrived
+        start_time = datetime.utcnow()
+        while true:
+            now = datetime.utcnow()
+            # timeout
+            if (now - start_time).total_seconds() > timeout:
+                return False
+            ret = self.store.get(filter={'key': signal})
+            # no data
+            if not ret:
+                time.sleep(interval)
+                continue
+            # new signal arrive within timeout
+            if (now - ret['time']).total_seconds() < timeout:
+                # reduce count
+                if ret['count'] > 0:
+                    ret['count'] -= 1
+                    if ret['count'] == 0:
+                        self.store.remove({'_id': ret['_id']})
+                    else:
+                        self.store.put(ret)
+                return True
+            time.sleep(interval)
 
 
 class Config(object):

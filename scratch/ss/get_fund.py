@@ -24,11 +24,11 @@ def store_fund_detail(fund_detail):
     config = Config('/etc/config.yaml')
     db = Store(config['mongodb']['server'], config['mongodb']['port'],
                'ss', 'fund_details')
-    print('Storing fund_detail %s' % fund_detail['fundNo'])
-    return db.put(fund_detail, key='fundNo')
+    print('Storing fund_detail %s' % fund_detail['id'])
+    return db.put(fund_detail, key='id')
 
 def get_fund_detail(fund):
-    print('Getting fund_detail %s' % fund['fundNo'])
+    print('Getting fund_detail %s' % fund['id'])
     url = 'http://gs.amac.org.cn/amac-infodisc/res/pof/fund/%s' % fund['url']
     soup = get_web(url, encoding='UTF-8')
     if not soup:
@@ -40,6 +40,7 @@ def get_fund_detail(fund):
     record_time = datetime.strptime(content[8].get_text(), '%Y-%m-%d') if content[8].get_text() else datetime.fromtimestamp(0)
     update_time = datetime.strptime(content[26].get_text(), '%Y-%m-%d') if content[26].get_text() else datetime.fromtimestamp(0)
     ret = {
+        'id': fund['id'],
         'name': content[1].get_text(),
         'fundNo': content[4].get_text(),
         'created_time': created_time,
@@ -62,38 +63,24 @@ def get_fund_detail(fund):
     return ret
 
 def store_fund(fund):
-    print('Storing fund %s' % fund['fundNo'])
+    print('Storing fund %s' % fund['id'])
     config = Config('/etc/config.yaml')
     db = Store(config['mongodb']['server'], config['mongodb']['port'],
                'ss', 'fund_list')
     fund['putOnRecordDate'] = datetime.fromtimestamp((fund['putOnRecordDate'] or 0)/1e3)
     fund['establishDate'] = datetime.fromtimestamp((fund['establishDate'] or 0)/1e3)
-    return db.put(fund, key='fundNo')
+    return db.put(fund, key='id')
 
 def _thread_fund_detail(fund):
     fund_detail = get_fund_detail(fund)
     store_fund_detail(fund_detail)
 
-def get_all_funds(debug=False):
+def get_all_funds():
     print('Getting fund list')
     url = 'http://gs.amac.org.cn/amac-infodisc/api/pof/fund?page=0&size=100000'
     fund_list = get_web(url, data='{}', encoding='utf-8')
-    config = Config('/etc/config.yaml')
-    db = Store(config['mongodb']['server'], config['mongodb']['port'],
-               'ss', 'fund_list')
-    db2 = Store(config['mongodb']['server'], config['mongodb']['port'],
-               'ss', 'fund_details')
-    stored_fund = db.get_field(key='fundNo')
-    sotred_fund_details = db2.get_field(key='fundNo')
-    pool = ThreadPool(10, debug=debug)
-    for fund in fund_list['content']:
-        if fund['fundNo'] not in stored_fund:
-            pool.add_task(store_fund, fund)
-        if fund['fundNo'] not in sotred_fund_details:
-            pool.add_task(_thread_fund_detail, fund)
-    pool.run()
-    # import ipdb;ipdb.set_trace()
-    return fund_list['content']
+    funds = fund_list['content']
+    return funds
 
 if __name__ == '__main__':
     # Rebuild tmp storage
@@ -106,5 +93,24 @@ if __name__ == '__main__':
     parser.add('--debug', action='store_true', default=False)
     parser.add('--update', action='store_true')
     # import ipdb;ipdb.set_trace()
-    funds = get_all_funds(debug=parser['debug'])
-
+    funds = get_all_funds()
+    print('Total record %s' % len(funds))
+    config = Config('/etc/config.yaml')
+    db = Store(config['mongodb']['server'], config['mongodb']['port'],
+               'ss', 'fund_list')
+    db2 = Store(config['mongodb']['server'], config['mongodb']['port'],
+               'ss', 'fund_details')
+    stored_fund = db.get_field(key='id')
+    sotred_fund_details = db2.get_field(key='id')
+    pool = ThreadPool(10, debug=parser['debug'])
+    print('Adding tasks')
+    # [pool.add_task(store_fund, fund) for fund in funds if fund['id'] not in stored_fund]
+    # [pool.add_task(_thread_fund_detail, fund) for fund in funds if fund['id'] not in sotred_fund_details]
+    for fund in funds:
+        if fund['id'] not in stored_fund:
+            pool.add_task(store_fund, fund)
+        if fund['id'] not in sotred_fund_details:
+            pool.add_task(_thread_fund_detail, fund)
+    print('Run tasks')
+    pool.run()
+    print('Done')
